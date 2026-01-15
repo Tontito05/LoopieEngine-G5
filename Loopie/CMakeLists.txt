@@ -22,7 +22,7 @@ find_package(imgui REQUIRED)
 find_package(DevIL REQUIRED)
 
 
-add_library(${PROJECT_NAME} ${SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES}  "src/Loopie/GUI/GUI Manager.cpp" "src/Loopie/GUI/GUI Manager.h")
 add_library(loopie-core ALIAS ${PROJECT_NAME})
 
 

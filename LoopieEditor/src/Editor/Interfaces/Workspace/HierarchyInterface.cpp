@@ -121,6 +121,11 @@ namespace Loopie {
 			SelectEntity(newEntity);
 		}	
 
+		if(ImGui::MenuItem("Canvas"))
+		{
+			SelectEntity(CreateCanvasEntity("Canvas", entity));
+		}
+
 		/*if (ImGui::MenuItem("Copy"))
 		{
 
@@ -228,4 +233,20 @@ namespace Loopie {
 
 		return newEntity;
 	}
+
+
+
+	std::shared_ptr<Entity> HierarchyInterface::CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> newCanvas = m_scene->CreateEntity(name, parent);
+
+		//Add all the components of the Canvas
+		//Rectangle Transform
+		//Canvas Renderer
+		//Canvas Scaler
+		//Graphic Raycaster
+
+		return newCanvas;
+	}
+
 }
