@@ -1,8 +1,8 @@
 #include "HierarchyInterface.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Components/MeshRenderer.h"
-#include "Loopie/Components/GUICanvas.h"
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/GUICanvas.h"
 #include "Loopie/Components/GUIRect.h"
 #include "Loopie/Resources/ResourceManager.h"
 #include "Loopie/Importers/MeshImporter.h"
@@ -267,6 +267,7 @@ namespace Loopie {
 		//Canvas Scaler
 		//Graphic Raycaster
 
+		canvasEntity.insert(newCanvas);
 		return newCanvas;
 	}
 }

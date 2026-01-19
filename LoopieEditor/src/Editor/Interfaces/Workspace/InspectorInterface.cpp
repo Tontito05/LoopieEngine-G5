@@ -4,6 +4,7 @@
 
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/GUIRect.h"
+#include "Loopie/Components/GUICanvas.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -67,6 +68,9 @@ namespace Loopie {
 			}
 			else if (component->GetTypeID() == GUIRect::GetTypeIDStatic()) {
 				DrawGUIRect(static_cast<GUIRect*>(component));
+			}
+			else if (component->GetTypeID() == GUICanvas::GetTypeIDStatic()) {
+				DrawGUICanvas(static_cast<GUICanvas*>(component));
 			}
 		}
 		AddComponent(entity);
@@ -364,6 +368,25 @@ namespace Loopie {
 
 		}
 	}
+
+	void InspectorInterface::DrawGUICanvas(GUICanvas* canvas)
+	{
+		if (ImGui::CollapsingHeader("Rectangle Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+			GUICanvas::RenderMode mode = GUICanvas::RenderMode::OVERLAY;
+
+			vec2 referenceResolution = vec2(1920, 1080);
+
+			if (ImGui::DragFloat2("Reference Resolution", &referenceResolution.x, 0.1f)) {
+				canvas->SetReferenceResolution(referenceResolution);
+			}
+			if(ImGui::Combo("Render Mode", (int*)&mode, "Overlay\0World\0"))
+			{
+				canvas->SetRenderMode(mode);
+			}
+		}
+	}
+
 
 	void InspectorInterface::AddComponent(const std::shared_ptr<Entity>& entity)
 	{

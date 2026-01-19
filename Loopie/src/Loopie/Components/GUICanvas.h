@@ -1,5 +1,9 @@
 #pragma once
 #include "Loopie/Components/Component.h"
+#include "Loopie/Math/MathTypes.h"
+#include "Loopie/Resources/Types/Texture.h"
+#include "Loopie/Resources/Types/Material.h"
+
 
 namespace Loopie {
 
@@ -9,32 +13,36 @@ namespace Loopie {
         DEFINE_TYPE(GUICanvas)
 
         enum class RenderMode {
-            ScreenSpace,
-            WorldSpace
+            OVERLAY,
+            CAMERA,
+            WORLD_SPACE
         };
 
-		GUICanvas() = default;
+		GUICanvas();
+		~GUICanvas();
 
-        void Init() override {}
+		// Getters
+		RenderMode GetRenderMode() const { return mode; }
+		vec2 GetReferenceResolution() const { return referenceResolution; }
+        std::shared_ptr<Material> GetMaterial() const { return material; }
 
-        RenderMode Mode = RenderMode::ScreenSpace;
+		// Setters
+		void SetRenderMode(RenderMode _mode) { mode = _mode; }
+		void SetReferenceResolution(const vec2& resolution) { referenceResolution = resolution; }
+		void SetMaterial(std::shared_ptr<Material> mat) { material = mat; }
 
-        vec2 ReferenceResolution = vec2(1920, 1080);
 
-        //Func
-        void UpdateCanvasAndChildren(const vec2& windowSize);
+        //Overrides
+        void Init() override;
+        JsonNode Serialize(JsonNode& parent) const override;
+        void Deserialize(const JsonNode& data) override;
 
-        JsonNode Serialize(JsonNode& parent) const override {
 
-            JsonNode canvas = parent.CreateObjectField("ui_canvas");
+    private:
 
-            canvas.CreateField("RenderMode", static_cast<int>(Mode));
-            canvas.CreateField("ReferenceResolutionX", ReferenceResolution.x);
-            canvas.CreateField("ReferenceResolutionY", ReferenceResolution.y);
-
-            return canvas;
-		}
-        void Deserialize(const JsonNode& data) override {}
+        RenderMode mode = RenderMode::OVERLAY;
+        std::shared_ptr<Material> material = nullptr;
+        vec2 referenceResolution = vec2(1920, 1080);
     };
 
 }

@@ -33,6 +33,8 @@ namespace Loopie {
 
 		static std::weak_ptr<Entity> s_SelectedEntity;
 		static Event<OnEntityOrFileNotification> s_OnEntitySelected;
+		std::unordered_set<std::shared_ptr<Entity>> canvasEntity;
+
 	private:
 		Scene* m_scene = nullptr;
 	};

@@ -9,6 +9,7 @@ namespace Loopie {
 	class Camera;
 	class MeshRenderer;
 	class GUIRect;
+	class GUICanvas;
 
 	class InspectorInterface : public Interface , public IObserver<OnEntityOrFileNotification>{
 	public:
@@ -34,6 +35,7 @@ namespace Loopie {
 		void DrawCamera(Camera* camera);
 		void DrawMeshRenderer(MeshRenderer* meshRenderer);
 		void DrawGUIRect(GUIRect* Rect);
+		void DrawGUICanvas(GUICanvas* canvas);
 		void AddComponent(const std::shared_ptr<Entity>& entity);
 
 		///FilesRelated

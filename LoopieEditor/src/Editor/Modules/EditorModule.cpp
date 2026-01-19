@@ -17,6 +17,7 @@
 
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/GUICanvas.h"
 #include "Loopie/Resources/Types/Material.h"
 ///
 
@@ -115,11 +116,17 @@ namespace Loopie
 			}
 		}
 
+		
+
 		/// SceneWindowRender		
 		if (m_scene.IsVisible()) {
 			m_scene.StartScene();
 			Renderer::BeginScene(m_scene.GetCamera()->GetViewMatrix(), m_scene.GetCamera()->GetProjectionMatrix(), true);
 			RenderWorld(m_scene.GetCamera());
+			for (const auto& entity : m_hierarchy.canvasEntity)
+			{
+				RenderGUI(m_scene.GetCamera(), entity.get());
+			}
 			Renderer::EndScene();
 			m_scene.EndScene();
 		}		
@@ -130,6 +137,10 @@ namespace Loopie
 			if (m_game.GetCamera() && m_game.GetCamera()->GetIsActive()) {
 				Renderer::BeginScene(m_game.GetCamera()->GetViewMatrix(), m_game.GetCamera()->GetProjectionMatrix(), false);
 				RenderWorld(m_game.GetCamera());
+				for (const auto& entity : m_hierarchy.canvasEntity)
+				{
+					RenderGUI(m_scene.GetCamera(), entity.get());
+				}
 				Renderer::EndScene();
 			}
 			m_game.EndScene();
@@ -251,6 +262,68 @@ namespace Loopie
 			}
 			scene->GetOctree().DebugDraw(Color::GREEN);
 		}
+	}
+
+	void EditorModule::RenderGUI(Camera* camera, Entity* Canvas)
+	{
+		Renderer::EnableStencil();
+		Renderer::EnableDepth();
+		Renderer::Clear();
+
+		std::vector<MeshRenderer*> renderers;
+		renderers.reserve(1);
+
+		auto selectedEntity = HierarchyInterface::s_SelectedEntity.lock();
+		for (const auto& entity : Canvas->GetChildren())
+		{
+			if (!entity->GetIsActive())
+				continue;
+
+			const std::vector<Component*>& components = entity->GetComponents();
+			renderers.clear();
+			for (size_t i = 0; i < components.size(); i++)
+			{
+				Component* component = components[i];
+				if (!component->GetIsActive())
+					continue;
+				if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
+					MeshRenderer* renderer = static_cast<MeshRenderer*>(component);
+					if (renderer->GetMesh())
+						renderers.push_back(renderer);
+				}
+
+				if (Renderer::IsGizmoActive()) {
+					if (component->GetTypeID() != Camera::GetTypeIDStatic())
+						component->RenderGizmo();
+				}
+			}
+
+			for (size_t i = 0; i < renderers.size(); i++)
+			{
+				MeshRenderer* renderer = renderers[i];
+
+				if (!Renderer::IsGizmoActive() || entity != selectedEntity) {
+					Renderer::AddRenderItem(renderer->GetMesh()->GetVAO(), renderer->GetMaterial(), entity->GetTransform());
+				}
+				else {
+					Renderer::SetStencilFunc(Renderer::StencilFunc::ALWAYS, 1, 0xFF);
+					Renderer::SetStencilOp(Renderer::StencilOp::KEEP, Renderer::StencilOp::KEEP, Renderer::StencilOp::REPLACE);
+					Renderer::SetStencilMask(0xFF);
+
+					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), Canvas->GetComponent<GUICanvas>()->GetMaterial(), entity->GetTransform());
+
+					Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
+					Renderer::SetStencilMask(0x00);
+
+					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), Canvas->GetComponent<GUICanvas>()->GetMaterial(), entity->GetTransform());
+
+					Renderer::SetStencilMask(0xFF);
+					Renderer::EnableDepth();
+					Renderer::DisableStencil();
+				}
+			}
+		}
+		Renderer::DisableStencil();
 	}
 
 	void EditorModule::CreateBakerHouse()

@@ -50,16 +50,11 @@ namespace Loopie {
 
             const vec2& parentSize = GetOwner()->GetComponent<GUIRect>()->GetSize();
 
-            Transform* t = GetOwner()->GetTransform();
-
             vec2 anchorPos = parentSize * anchorMin;
             vec2 anchorSize = parentSize * (anchorMax - anchorMin);
 
             vec2 finalSize = anchorSize + size;
             vec2 pos = anchorPos + (finalSize * pivot) + offset;
-
-            t->SetLocalPosition(vec3(pos, 0.0f));
-            t->SetLocalScale(vec3(finalSize, 1.0f));
         }
 
         JsonNode Serialize(JsonNode& parent) const override;
