@@ -64,6 +64,9 @@ namespace Loopie {
 			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
 				DrawMeshRenderer(static_cast<MeshRenderer*>(component));
 			}
+			else if (component->GetTypeID() == RectTransform::GetTypeIDStatic()) {
+				DrawRectTransform(static_cast<RectTransform*>(component));
+			}
 		}
 		AddComponent(entity);
 	}
@@ -380,6 +383,44 @@ namespace Loopie {
 
 		RemoveComponent(meshRenderer);	
 		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawRectTransform(RectTransform* rectTransform)
+	{
+		if (ImGui::CollapsingHeader("Rect Transform", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::DragFloat2("Anchored Pos", &rectTransform->anchoredPosition.x, 1.0f)) {
+				rectTransform->CalculateRect(); // Recalculate immediately
+			}
+
+			if (ImGui::DragFloat2("Size Delta", &rectTransform->sizeDelta.x, 1.0f)) {
+				rectTransform->CalculateRect();
+			}
+
+			ImGui::Separator();
+
+			if (ImGui::DragFloat2("Anchor Min", &rectTransform->anchorMin.x, 0.01f, 0.0f, 1.0f)) {
+				rectTransform->CalculateRect();
+			}
+
+			if (ImGui::DragFloat2("Anchor Max", &rectTransform->anchorMax.x, 0.01f, 0.0f, 1.0f)) {
+				rectTransform->CalculateRect();
+			}
+
+			if (ImGui::DragFloat2("Pivot", &rectTransform->pivot.x, 0.01f, 0.0f, 1.0f)) {
+				rectTransform->CalculateRect();
+			}
+
+			ImGui::Separator();
+
+			ImGui::Checkbox("Draggable", &rectTransform->draggable);
+			ImGui::SameLine();
+			ImGui::Checkbox("Interactive", &rectTransform->interactive);
+
+			ImGui::Checkbox("Invisible", &rectTransform->invisible);
+			ImGui::SameLine();
+			ImGui::Checkbox("Cut Childs", &rectTransform->cut_childs);
+		}
 	}
 
 	void InspectorInterface::AddComponent(const std::shared_ptr<Entity>& entity)

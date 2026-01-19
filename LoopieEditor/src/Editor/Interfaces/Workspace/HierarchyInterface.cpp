@@ -1,6 +1,7 @@
 #include "HierarchyInterface.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Components/MeshRenderer.h"
+#include "Loopie/Components/RectTransform.h"
 #include "Loopie/Resources/ResourceManager.h"
 #include "Loopie/Importers/MeshImporter.h"
 
@@ -161,6 +162,14 @@ namespace Loopie {
 
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::BeginMenu("UI"))
+		{
+			if (ImGui::MenuItem("Canvas"))
+				SelectEntity(CreateCanvasEntity("Canvas", entity));
+			
+			ImGui::EndMenu();
+		}
 	}
 
 	void HierarchyInterface::HotKeysSelectedEntiy(const InputEventManager& inputEvent)
@@ -228,4 +237,25 @@ namespace Loopie {
 
 		return newEntity;
 	}
+<<<<<<< Updated upstream
+=======
+
+
+
+	std::shared_ptr<Entity> HierarchyInterface::CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> newCanvas = m_scene->CreateEntity(name, parent);
+		
+		newCanvas->AddComponent<RectTransform>();
+
+		//Add all the components of the Canvas
+		//Rectangle Transform
+		//Canvas Renderer
+		//Canvas Scaler
+		//Graphic Raycaster
+
+		return newCanvas;
+	}
+
+>>>>>>> Stashed changes
 }

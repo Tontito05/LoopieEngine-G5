@@ -3,6 +3,7 @@
 #include "Editor/Interfaces/Interface.h"
 #include "Loopie/Events/IObserver.h"
 #include "Editor/Events/EditorEventTypes.h"
+#include "Loopie/Components/RectTransform.h"
 
 namespace Loopie {
 	class Transform;
@@ -33,6 +34,7 @@ namespace Loopie {
 		void DrawTransform(Transform* transform);
 		void DrawCamera(Camera* camera);
 		void DrawMeshRenderer(MeshRenderer* meshRenderer);
+		void DrawRectTransform(RectTransform* rectTransform);
 		void AddComponent(const std::shared_ptr<Entity>& entity);
 		bool RemoveComponent(Component* component);
 
