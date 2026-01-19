@@ -1,6 +1,9 @@
 #include "HierarchyInterface.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Components/MeshRenderer.h"
+#include "Loopie/Components/GUICanvas.h"
+#include "Loopie/Components/Transform.h"
+#include "Loopie/Components/GUIRect.h"
 #include "Loopie/Resources/ResourceManager.h"
 #include "Loopie/Importers/MeshImporter.h"
 
@@ -12,13 +15,13 @@ namespace Loopie {
 	Event<OnEntityOrFileNotification> HierarchyInterface::s_OnEntitySelected;
 
 	HierarchyInterface::HierarchyInterface() {
-		
+
 	}
 
 	void HierarchyInterface::Update(const InputEventManager& inputEvent)
 	{
-		if(m_focused)
-			HotKeysSelectedEntiy(inputEvent);	
+		if (m_focused)
+			HotKeysSelectedEntiy(inputEvent);
 	}
 
 	void HierarchyInterface::Render() {
@@ -26,7 +29,7 @@ namespace Loopie {
 		if (ImGui::Begin("Hierarchy")) {
 
 			m_focused = ImGui::IsWindowHovered();
-			
+
 			if (!m_scene) {
 				ImGui::End();
 				return;
@@ -45,9 +48,9 @@ namespace Loopie {
 			for (const auto& entity : m_scene->GetRootEntity()->GetChildren())
 			{
 				DrawEntitySlot(entity);
-				
+
 			}
-		
+
 
 			ImVec2 size = ImGui::GetContentRegionAvail();
 			//ImGui::SetCursorPos(cursorPos);  /// And move up the avail
@@ -119,7 +122,29 @@ namespace Loopie {
 		{
 			std::shared_ptr<Entity> newEntity = m_scene->CreateEntity("Entity", entity);
 			SelectEntity(newEntity);
-		}	
+		}
+
+
+			//Submenu for UI elements
+			if (ImGui::BeginMenu("UI"))
+			{
+				if (ImGui::MenuItem("Canvas"))
+				{
+					SelectEntity(CreateCanvasEntity("Canvas", entity));
+				}
+
+				if (ImGui::MenuItem("Button"))
+				{
+					if(entity.get()->HasComponent<GUICanvas>())
+					{
+						std::shared_ptr<Entity> buttonEntity = m_scene->CreateEntity("Button", entity);
+						//Add Button specific components here
+						SelectEntity(buttonEntity);
+						buttonEntity->AddComponent<GUIRect>();
+					}
+				}
+				ImGui::EndMenu();
+			}
 
 		/*if (ImGui::MenuItem("Copy"))
 		{
@@ -136,7 +161,7 @@ namespace Loopie {
 
 		}*/
 
-		if (ImGui::MenuItem("Delete",nullptr, false, entity != nullptr))
+		if (ImGui::MenuItem("Delete", nullptr, false, entity != nullptr))
 		{
 			if (s_SelectedEntity.lock() == entity)
 				SelectEntity(nullptr);
@@ -206,7 +231,7 @@ namespace Loopie {
 			{
 				Entity* draggedRaw = *(Entity**)payload->Data;
 
-				if(draggedRaw)
+				if (draggedRaw)
 					draggedRaw->SetParent(entity);
 			}
 
@@ -227,5 +252,21 @@ namespace Loopie {
 			renderer->SetMesh(mesh);
 
 		return newEntity;
+	}
+
+
+
+	std::shared_ptr<Entity> HierarchyInterface::CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> newCanvas = m_scene->CreateEntity(name, parent);
+
+		newCanvas->AddComponent<GUIRect>();
+		newCanvas->AddComponent<GUICanvas>();
+		//Add all the components of the Canvas
+		//Canvas Renderer
+		//Canvas Scaler
+		//Graphic Raycaster
+
+		return newCanvas;
 	}
 }

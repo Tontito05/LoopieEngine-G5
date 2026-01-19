@@ -3,6 +3,7 @@
 #include "Editor/Interfaces/Workspace/AssetsExplorerInterface.h"
 
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/GUIRect.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -63,6 +64,9 @@ namespace Loopie {
 			}
 			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
 				DrawMeshRenderer(static_cast<MeshRenderer*>(component));
+			}
+			else if (component->GetTypeID() == GUIRect::GetTypeIDStatic()) {
+				DrawGUIRect(static_cast<GUIRect*>(component));
 			}
 		}
 		AddComponent(entity);
@@ -327,6 +331,37 @@ namespace Loopie {
 			if (ImGui::Button("Apply")) {
 				material->Save();
 			}
+		}
+	}
+
+	void InspectorInterface::DrawGUIRect(GUIRect* Rect)
+	{
+		if (ImGui::CollapsingHeader("Rectangle Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+			vec2 anchorMin = Rect->GetAnchorMin();
+			vec2 anchorMax = Rect->GetAnchorMax();
+
+			vec2 pivot = Rect->GetPivot();
+
+			vec2 size = Rect->GetSize();
+			vec2 offset = Rect->GetOffset();
+
+			if (ImGui::DragFloat2("Anchor Min", &anchorMin.x, 0.1f)) {
+				Rect->SetAnchorMin(anchorMin);
+			}
+			if (ImGui::DragFloat2("Anchor Max", &anchorMax.x, 0.5f)) {
+				Rect->SetAnchorMax(anchorMax);
+			}
+			if (ImGui::DragFloat2("Pibot ", &pivot.x, 0.1f)) {
+				Rect->SetPivot(pivot);
+			}
+			if (ImGui::DragFloat2("Size", &size.x, 1.0f)) {
+				Rect->SetSize(size);
+			}
+			if (ImGui::DragFloat2("Offset", &offset.x, 1.0f)) {
+				Rect->SetOffset(offset);
+			}
+
 		}
 	}
 
