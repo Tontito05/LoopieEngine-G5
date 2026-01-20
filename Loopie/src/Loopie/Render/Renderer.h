@@ -71,11 +71,14 @@ namespace Loopie {
 		static void EndScene();
 
 		static void AddRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform);
+		static void AddUIRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform);
 		static void FlushRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform);
 		static void FlushRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const matrix4& modelMatrix);
 
 		static void EnableDepth();
 		static void DisableDepth();
+		static void EnableBlend();
+		static void DisableBlend();
 
 		static void EnableStencil();
 		static void DisableStencil();
@@ -92,6 +95,7 @@ namespace Loopie {
 	private:
 
 		static std::vector<RenderItem> s_RenderQueue;
+		static std::vector<RenderItem> s_UIRenderQueue;
 		static std::vector<Camera*> s_RenderCameras;
 		static std::shared_ptr<UniformBuffer> s_MatricesUniformBuffer;
 

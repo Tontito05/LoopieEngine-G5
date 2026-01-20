@@ -1,3 +1,4 @@
+#pragma once
 #include "Loopie/Components/Component.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Scene/Entity.h"

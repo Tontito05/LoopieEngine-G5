@@ -12,6 +12,7 @@
 namespace Loopie {
 
 	std::vector<Renderer::RenderItem> Renderer::s_RenderQueue = std::vector<Renderer::RenderItem>();
+	std::vector<Renderer::RenderItem> Renderer::s_UIRenderQueue = std::vector<Renderer::RenderItem>();
 	std::vector<Camera*> Renderer::s_RenderCameras = std::vector<Camera*>();
 	std::shared_ptr<UniformBuffer> Renderer::s_MatricesUniformBuffer = nullptr;
 	bool Renderer::s_UseGizmos = true;
@@ -94,6 +95,11 @@ namespace Loopie {
 		s_RenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), material, transform});
 	}
 
+	void Renderer::AddUIRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
+	{
+		s_UIRenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), material, transform });
+	}
+
 	void Renderer::FlushRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
 	{
 		FlushRenderItem(vao, material, transform->GetLocalToWorldMatrix());
@@ -124,7 +130,17 @@ namespace Loopie {
 			item.VAO->Unbind();
 		}
 
+		for (const RenderItem& item : s_UIRenderQueue) {
+
+			item.VAO->Bind();
+			item.Material->Bind();
+			SetRenderUniforms(item.Material, item.Transform);
+			glDrawElements(GL_TRIANGLES, item.IndexCount, GL_UNSIGNED_INT, nullptr);
+			item.VAO->Unbind();
+		}
+
 		s_RenderQueue.clear();
+		s_UIRenderQueue.clear();
 	}
 
 	void Renderer::SetRenderUniforms(std::shared_ptr<Material> material, const Transform* transform)
@@ -142,6 +158,15 @@ namespace Loopie {
 	void Renderer::DisableDepth()
 	{
 			glDisable(GL_DEPTH_TEST);
+	}
+	void Renderer::EnableBlend()
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	void Renderer::DisableBlend()
+	{
+		glDisable(GL_BLEND);
 	}
 	void Renderer::EnableStencil()
 	{

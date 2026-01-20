@@ -360,4 +360,9 @@ namespace Loopie {
 		}
 		HierarchyInterface::SelectEntity(selectedEntity);
 	}
+
+	ivec2 SceneInterface::GetWindowSize() const
+	{
+		return m_windowSize;
+	}
 }

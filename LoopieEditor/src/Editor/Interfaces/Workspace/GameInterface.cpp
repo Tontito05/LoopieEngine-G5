@@ -58,4 +58,9 @@ namespace Loopie {
 	{
 		m_buffer->Unbind();
 	}
+
+	ivec2 GameInterface::GetWindowSize() const
+	{
+		return m_windowSize;
+	}
 }

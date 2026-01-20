@@ -31,6 +31,8 @@ namespace Loopie {
 
 		bool IsVisible() { return m_visible; }
 
+		ivec2 GetWindowSize() const;
+
 	private:
 
 		void HotKeysSelectedEntiy(const InputEventManager& inputEvent);
