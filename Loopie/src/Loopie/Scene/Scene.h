@@ -47,12 +47,15 @@ namespace Loopie {
 		std::vector<std::shared_ptr<Entity>> GetAllEntitiesHierarchical(std::shared_ptr<Entity> parentEntity = nullptr) const;
 		std::vector<std::shared_ptr<Entity>> GetAllSiblings(std::shared_ptr<Entity> parentEntity = nullptr) const;
 		bool ReadAndLoadSceneFile(std::string filePath, bool safeSceneAsLastLoaded = true);
+		const std::vector<std::shared_ptr<Entity>> GetAllUIEntities(std::shared_ptr<Entity> parentEntity) const;
 
 	public:
 
 	private:
 		std::string GetUniqueName(std::shared_ptr<Entity> parentEntity, const std::string& desiredName);
 		void CollectEntitiesRecursive(std::shared_ptr<Entity> entity,
+									  std::vector<std::shared_ptr<Entity>>& outEntities) const;
+		void CollectUIEntitiesRecursive(std::shared_ptr<Entity> entity, 
 									  std::vector<std::shared_ptr<Entity>>& outEntities) const;
 		void RemoveEntityRecursive(std::shared_ptr<Entity> parent);
 

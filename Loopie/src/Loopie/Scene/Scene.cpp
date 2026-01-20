@@ -3,6 +3,7 @@
 #include "Loopie/Core/Application.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/RectTransform.h"
 #include "Loopie/Components/Camera.h"
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Helpers/LoopieHelpers.h"
@@ -420,5 +421,31 @@ namespace Loopie {
 
 		m_octree->Remove(entity);
 		m_entities.erase(entity->GetUUID());
+	}
+
+	const std::vector<std::shared_ptr<Entity>> Scene::GetAllUIEntities(std::shared_ptr<Entity> parentEntity) const
+	{
+		std::vector<std::shared_ptr<Entity>> entities;
+
+		if (!parentEntity)
+		{
+			parentEntity = m_rootEntity;
+		}
+
+		CollectUIEntitiesRecursive(parentEntity, entities);
+		return entities;
+	}
+
+	void Scene::CollectUIEntitiesRecursive(std::shared_ptr<Entity> entity, std::vector<std::shared_ptr<Entity>>& outEntities) const 
+	{
+		if (!entity)
+			return;
+		if (entity->HasComponent<RectTransform>()) {
+			outEntities.push_back(entity);
+		}
+		for (const auto& child : entity->GetChildren())
+		{
+			CollectUIEntitiesRecursive(child, outEntities);
+		}
 	}
 }
