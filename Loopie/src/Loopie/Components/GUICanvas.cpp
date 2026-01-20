@@ -16,11 +16,6 @@ namespace Loopie {
             material->SetShader(Shader("assets/shaders/GUIShader.shader"));
         }
 
-        void GUICanvas::ChangeRenderMode(RenderMode _mode)
-        {
-			mode = _mode;
-        }
-
         JsonNode GUICanvas::Serialize(JsonNode& parent) const {
 
             JsonNode canvas = parent.CreateObjectField("ui_canvas");

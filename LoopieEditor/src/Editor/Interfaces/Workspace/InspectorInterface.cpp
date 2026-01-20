@@ -371,11 +371,11 @@ namespace Loopie {
 
 	void InspectorInterface::DrawGUICanvas(GUICanvas* canvas)
 	{
-		if (ImGui::CollapsingHeader("Rectangle Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader("Canvas", ImGuiTreeNodeFlags_DefaultOpen)) {
 
-			GUICanvas::RenderMode mode = GUICanvas::RenderMode::OVERLAY;
+			GUICanvas::RenderMode mode = canvas->GetRenderMode();
 
-			vec2 referenceResolution = vec2(1920, 1080);
+			vec2 referenceResolution = canvas->GetReferenceResolution();
 
 			if (ImGui::DragFloat2("Reference Resolution", &referenceResolution.x, 0.1f)) {
 				canvas->SetReferenceResolution(referenceResolution);

@@ -260,8 +260,8 @@ namespace Loopie {
 	{
 		std::shared_ptr<Entity> newCanvas = m_scene->CreateEntity(name, parent);
 
-		newCanvas->AddComponent<GUIRect>();
 		newCanvas->AddComponent<GUICanvas>();
+		newCanvas->AddComponent<GUIRect>();
 		//Add all the components of the Canvas
 		//Canvas Renderer
 		//Canvas Scaler
