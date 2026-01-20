@@ -18,6 +18,7 @@
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/GUICanvas.h"
+#include "Loopie/Components/GUIRender.h"
 #include "Loopie/Resources/Types/Material.h"
 ///
 
@@ -269,78 +270,67 @@ namespace Loopie
 		GUICanvas* canvas = Canvas->GetComponent<GUICanvas>();
 		if (!canvas) return;
 
+		// --- 1. PREPARE THE PROJECTION MATRIX ---
 		matrix4 projection;
-
 		if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
-
 			vec2 resolution = canvas->GetReferenceResolution();
 			projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
-			
 			Renderer::DisableDepth();
 		}
 		else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
-
 			projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
 			Renderer::EnableDepth();
 		}
 
+		// Pack the matrix into your engine's UniformValue system
+		UniformValue projectionUniform;
+		projectionUniform.type = UniformType::UniformType_mat4;
+		projectionUniform.value = projection;
+
 		Renderer::EnableStencil();
 		Renderer::Clear();
 
-		std::vector<MeshRenderer*> renderers;
-		renderers.reserve(1);
-
 		auto selectedEntity = HierarchyInterface::s_SelectedEntity.lock();
+
+		// --- 2. ITERATE UI ENTITIES ---
 		for (const auto& entity : m_currentScene->GetAllUIEntities(Canvas))
 		{
-			if (!entity->GetIsActive())
-				continue;
+			if (!entity->GetIsActive()) continue;
 
-			const std::vector<Component*>& components = entity->GetComponents();
-			renderers.clear();
-			for (size_t i = 0; i < components.size(); i++)
-			{
-				Component* component = components[i];
-				if (!component->GetIsActive())
-					continue;
-				if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
-					MeshRenderer* renderer = static_cast<MeshRenderer*>(component);
-					if (renderer->GetMesh())
-						renderers.push_back(renderer);
-				}
+			// Look for the specific UI renderer instead of MeshRenderer
+			GUIRender* guiRenderer = entity->GetComponent<GUIRender>();
+			if (!guiRenderer || !guiRenderer->GetMesh()) continue;
 
-				if (Renderer::IsGizmoActive()) {
-					if (component->GetTypeID() != Camera::GetTypeIDStatic())
-						component->RenderGizmo();
-				}
+			auto material = guiRenderer->GetMaterial();
+
+			// --- 3. APPLY THE PROJECTION TO THE SHADER ---
+			// This ensures the vertex shader knows the screen dimensions
+			material->SetShaderVariable("projection", projectionUniform);
+
+			// --- 4. RENDER LOGIC ---
+			if (!Renderer::IsGizmoActive() || entity != selectedEntity) {
+				Renderer::AddRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
 			}
+			else {
+				// Selection Stencil Logic
+				Renderer::SetStencilFunc(Renderer::StencilFunc::ALWAYS, 1, 0xFF);
+				Renderer::SetStencilOp(Renderer::StencilOp::KEEP, Renderer::StencilOp::KEEP, Renderer::StencilOp::REPLACE);
+				Renderer::SetStencilMask(0xFF);
 
-			for (size_t i = 0; i < renderers.size(); i++)
-			{
-				MeshRenderer* renderer = renderers[i];
+				Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
 
-				if (!Renderer::IsGizmoActive() || entity != selectedEntity) {
-					Renderer::AddRenderItem(renderer->GetMesh()->GetVAO(), renderer->GetMaterial(), entity->GetTransform());
-				}
-				else {
-					Renderer::SetStencilFunc(Renderer::StencilFunc::ALWAYS, 1, 0xFF);
-					Renderer::SetStencilOp(Renderer::StencilOp::KEEP, Renderer::StencilOp::KEEP, Renderer::StencilOp::REPLACE);
-					Renderer::SetStencilMask(0xFF);
+				Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
+				Renderer::SetStencilMask(0x00);
 
-					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), renderer->GetMaterial(), entity->GetTransform());
+				// Draw the outline using the selection material
+				Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
 
-					Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
-					Renderer::SetStencilMask(0x00);
-
-					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
-
-					Renderer::SetStencilMask(0xFF);
-					Renderer::EnableDepth();
-					Renderer::DisableStencil();
-				}
+				Renderer::SetStencilMask(0xFF);
+				Renderer::EnableDepth();
+				Renderer::DisableStencil();
 			}
 		}
-		
+
 		Renderer::DisableStencil();
 		Renderer::EndScene();
 	}
