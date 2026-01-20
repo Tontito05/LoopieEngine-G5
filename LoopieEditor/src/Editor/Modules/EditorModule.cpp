@@ -17,7 +17,7 @@
 
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Components/Transform.h"
-#include "Loopie/Components/GUICanvas.h"
+#include "Loopie/Components/Canvas.h"
 #include "Loopie/Components/GUIRender.h"
 #include "Loopie/Resources/Types/Material.h"
 ///
@@ -265,9 +265,9 @@ namespace Loopie
 		}
 	}
 
-	void EditorModule::RenderGUI(Camera* camera, std::shared_ptr<Entity> Canvas)
+	void EditorModule::RenderGUI(Camera* camera, std::shared_ptr<Entity> parentCanvas)
 	{
-		GUICanvas* canvas = Canvas->GetComponent<GUICanvas>();
+		Canvas* canvas = parentCanvas->GetComponent<Canvas>();
 		if (!canvas) return;
 
 		UniformValue projectionUniform;
@@ -276,12 +276,12 @@ namespace Loopie
 		if (camera == m_game.GetCamera()) //Render for game
 		{
 			// --- 1. PREPARE THE PROJECTION MATRIX ---
-			if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
+			if (canvas->GetRenderMode() == Canvas::RenderMode::OVERLAY) {
 				vec2 resolution = canvas->GetReferenceResolution();
 				projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
 				Renderer::DisableDepth();
 			}
-			else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
+			else if (canvas->GetRenderMode() == Canvas::RenderMode::WORLD_SPACE) {
 				projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
 				Renderer::EnableDepth();
 			}
@@ -304,7 +304,7 @@ namespace Loopie
 		};
 
 		// --- 2. ITERATE UI ENTITIES ---
-		for (const auto& entity : m_currentScene->GetAllUIEntities(Canvas))
+		for (const auto& entity : m_currentScene->GetAllUIEntities(parentCanvas))
 		{
 			if (!entity->GetIsActive()) continue;
 

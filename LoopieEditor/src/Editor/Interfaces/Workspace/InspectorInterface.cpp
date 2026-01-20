@@ -2,7 +2,7 @@
 #include "Editor/Interfaces/Workspace/HierarchyInterface.h"
 #include "Editor/Interfaces/Workspace/AssetsExplorerInterface.h"
 #include "Loopie/Components/Transform.h"
-#include "Loopie/Components/GUICanvas.h"
+#include "Loopie/Components/Canvas.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -64,8 +64,8 @@ namespace Loopie {
 			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
 				DrawMeshRenderer(static_cast<MeshRenderer*>(component));
 			}
-			else if (component->GetTypeID() == GUICanvas::GetTypeIDStatic()) {
-				DrawGUICanvas(static_cast<GUICanvas*>(component));
+			else if (component->GetTypeID() == Canvas::GetTypeIDStatic()) {
+				DrawGUICanvas(static_cast<Canvas*>(component));
 			}
 			else if (component->GetTypeID() == RectTransform::GetTypeIDStatic()) {
 				DrawRectTransform(static_cast<RectTransform*>(component));
@@ -426,11 +426,11 @@ namespace Loopie {
 		}
 	}
 
-	void InspectorInterface::DrawGUICanvas(GUICanvas* canvas)
+	void InspectorInterface::DrawGUICanvas(Canvas* canvas)
 	{
 		if (ImGui::CollapsingHeader("Canvas", ImGuiTreeNodeFlags_DefaultOpen)) {
 
-			GUICanvas::RenderMode mode = canvas->GetRenderMode();
+			Canvas::RenderMode mode = canvas->GetRenderMode();
 
 			vec2 referenceResolution = canvas->GetReferenceResolution();
 

@@ -29,7 +29,7 @@ namespace Loopie {
 
 		std::shared_ptr<Entity> CreatePrimitiveModel(const std::string& modelPath, const std::string& name, const std::shared_ptr<Entity>& parent);
 		std::shared_ptr<Entity> CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent);
-
+		std::shared_ptr<Entity> CreateButtonEntity(const std::string& name, const std::shared_ptr<Entity>& parent);
 
 	public:
 

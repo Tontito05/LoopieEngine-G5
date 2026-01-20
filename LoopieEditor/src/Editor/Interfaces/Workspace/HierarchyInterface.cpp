@@ -2,7 +2,7 @@
 #include "Loopie/Core/Log.h"
 #include "Loopie/Components/MeshRenderer.h"
 
-#include "Loopie/Components/GUICanvas.h"
+#include "Loopie/Components/Canvas.h"
 #include "Loopie/Components/GUIRender.h"
 #include "Loopie/Components/RectTransform.h"
 
@@ -174,7 +174,7 @@ namespace Loopie {
 				SelectEntity(CreateCanvasEntity("Canvas", entity));
 			if (ImGui::MenuItem("Button"))
 			{
-				if (entity.get()->HasComponent<GUICanvas>())
+				if (entity.get()->HasComponent<Canvas>())
 				{
 					std::shared_ptr<Entity> buttonEntity = m_scene->CreateEntity("Button", entity);
 					//Add Button specific components here
@@ -256,18 +256,20 @@ namespace Loopie {
 
 	std::shared_ptr<Entity> HierarchyInterface::CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
 	{
-		std::shared_ptr<Entity> newCanvas = m_scene->CreateEntity(name, parent);
+		std::shared_ptr<Entity> newCanvas = CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Plane", parent);
 		
-			newCanvas->AddComponent<GUICanvas>();
-			newCanvas->AddComponent<RectTransform>();
-			newCanvas->AddComponent<GUIRender>();
+		newCanvas->AddComponent<Canvas>();
+		newCanvas->AddComponent<RectTransform>();
 
-		//Add all the components of the Canvas
-		//Rectangle Transform
-		//Canvas Renderer
-		//Canvas Scaler
-		//Graphic Raycaster
-		canvasEntity.insert(newCanvas);
 		return newCanvas;
+	}
+
+	std::shared_ptr<Entity> HierarchyInterface::CreateButtonEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> newButton= CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Plane", parent);		//Add all the components of the Button
+
+		newButton->AddComponent<RectTransform>();
+
+		return newButton;
 	}
 }
