@@ -7,9 +7,28 @@
 
 namespace Loopie {
 
+	class RectTransform;
+
+	enum class RectHandle {
+		None,
+		Move,
+		Left, Right, Top, Bottom,
+		TopLeft, TopRight,
+		BottomLeft, BottomRight
+	};
+
+	struct RectTransformEditState {
+		RectTransform* target = nullptr;
+		RectHandle activeHandle = RectHandle::None;
+		vec2 startMouse;
+		vec2 startAnchoredPos;
+		vec2 startSize;
+	};
+
 	class RectTransform : public Component, public IObserver<TransformNotification>
 	{
 	public:
+
 		DEFINE_TYPE(RectTransform)
 
 		RectTransform() = default;
@@ -45,6 +64,12 @@ namespace Loopie {
 		void OnNotify(const TransformNotification& notification) override;
 
 		void SyncRectToTransform();
+
+		//Handel
+		RectHandle GetHandleAt(float mouseX, float mouseY) const;
+		void ApplyRectHandleDrag(RectTransform* rt, RectHandle handle, const vec2& mouseDelta);
+		void DrawRectTransformGizmo(const RectTransform* rt);
+
 
 	public:
 		vec2 anchorMin = { 0.0f, 0.0f };

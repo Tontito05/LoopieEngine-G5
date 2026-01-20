@@ -165,7 +165,107 @@ bool RectTransform::IsMouseInside(float mouseX, float mouseY) const
         mouseY >= screenY && mouseY <= screenY + height;
 }
 
+RectHandle RectTransform::GetHandleAt(float mouseX, float mouseY) const
+{
+    const float HANDLE_SIZE = 6.0f;
 
+    float l = screenX;
+    float r = screenX + width;
+    float b = screenY;
+    float t = screenY + height;
+
+    auto near = [&](float a, float b) {
+        return fabs(a - b) <= HANDLE_SIZE;
+        };
+
+    // Corners
+    if (near(mouseX, l) && near(mouseY, b)) return RectHandle::BottomLeft;
+    if (near(mouseX, r) && near(mouseY, b)) return RectHandle::BottomRight;
+    if (near(mouseX, l) && near(mouseY, t)) return RectHandle::TopLeft;
+    if (near(mouseX, r) && near(mouseY, t)) return RectHandle::TopRight;
+
+    // Edges
+    if (near(mouseX, l) && mouseY > b && mouseY < t) return RectHandle::Left;
+    if (near(mouseX, r) && mouseY > b && mouseY < t) return RectHandle::Right;
+    if (near(mouseY, b) && mouseX > l && mouseX < r) return RectHandle::Bottom;
+    if (near(mouseY, t) && mouseX > l && mouseX < r) return RectHandle::Top;
+
+    // Inside
+    if (IsMouseInside(mouseX, mouseY)) return RectHandle::Move;
+
+    return RectHandle::None;
+}
+
+void ApplyRectHandleDrag(RectTransform* rt, RectHandle handle, const vec2& mouseDelta)
+{
+    vec2 pos = rt->GetAnchoredPosition();
+    vec2 size = rt->GetSizeDelta();
+
+    switch (handle)
+    {
+    case RectHandle::Move:
+        pos += mouseDelta;
+        break;
+
+    case RectHandle::Left:
+        pos.x += mouseDelta.x * 0.5f;
+        size.x -= mouseDelta.x;
+        break;
+
+    case RectHandle::Right:
+        pos.x += mouseDelta.x * 0.5f;
+        size.x += mouseDelta.x;
+        break;
+
+    case RectHandle::Bottom:
+        pos.y += mouseDelta.y * 0.5f;
+        size.y -= mouseDelta.y;
+        break;
+
+    case RectHandle::Top:
+        pos.y += mouseDelta.y * 0.5f;
+        size.y += mouseDelta.y;
+        break;
+
+    case RectHandle::TopLeft:
+        pos += vec2(mouseDelta.x * 0.5f, mouseDelta.y * 0.5f);
+        size += vec2(-mouseDelta.x, mouseDelta.y);
+        break;
+
+    case RectHandle::TopRight:
+        pos += mouseDelta * 0.5f;
+        size += mouseDelta;
+        break;
+
+    case RectHandle::BottomLeft:
+        pos += vec2(mouseDelta.x * 0.5f, mouseDelta.y * 0.5f);
+        size += vec2(-mouseDelta.x, -mouseDelta.y);
+        break;
+
+    case RectHandle::BottomRight:
+        pos += vec2(mouseDelta.x * 0.5f, mouseDelta.y * 0.5f);
+        size += vec2(mouseDelta.x, -mouseDelta.y);
+        break;
+
+    default:
+        return;
+    }
+
+    // Prevent inversion
+    size.x = std::max(size.x, 1.0f);
+    size.y = std::max(size.y, 1.0f);
+
+    rt->SetAnchoredPosition(pos);
+    rt->SetSizeDelta(size);
+}
+
+void DrawRectTransformGizmo(const RectTransform* rt)
+{
+	//TODO
+}
+
+
+//GETTERS AND SETTERS
 const Loopie::vec2 Loopie::RectTransform::GetAnchorMin() const 
 {
 	return anchorMin;

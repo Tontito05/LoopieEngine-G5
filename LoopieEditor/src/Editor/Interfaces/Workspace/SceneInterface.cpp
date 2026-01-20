@@ -4,6 +4,7 @@
 #include "Loopie/Core/Application.h"
 #include "Loopie/Render/Renderer.h"
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/RectTransform.h"
 
 #include "Loopie/Resources/AssetRegistry.h"
 #include "Loopie/Resources/ResourceManager.h"
@@ -61,7 +62,15 @@ namespace Loopie {
 		m_camera->ProcessEvent(inputEvent);
 		m_camera->Update();
 		if (inputEvent.GetMouseButtonStatus(0) == KeyState::DOWN && !m_usingGuizmo)
+		{
 			MousePick();
+			auto selectedEntity = HierarchyInterface::s_SelectedEntity.lock();
+
+			if(selectedEntity && selectedEntity.get()->HasComponent<RectTransform>())
+			{
+				selectedEntity.get()->GetComponent<RectTransform>()->GetHandleAt((float)m_mousePosition.x, (float)m_mousePosition.y);
+			}
+		}
 
 		HotKeysSelectedEntiy(inputEvent);
 	}
