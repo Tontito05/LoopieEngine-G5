@@ -4,6 +4,7 @@
 #include "Loopie/Events/Event.h"
 #include "Editor/Events/EditorEventTypes.h"
 
+
 namespace Loopie {
 	class HierarchyInterface : public Interface {
 	public:

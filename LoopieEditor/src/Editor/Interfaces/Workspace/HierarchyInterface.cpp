@@ -3,6 +3,7 @@
 #include "Loopie/Components/MeshRenderer.h"
 
 #include "Loopie/Components/GUICanvas.h"
+#include "Loopie/Components/GUIRender.h"
 #include "Loopie/Components/RectTransform.h"
 
 #include "Loopie/Resources/ResourceManager.h"
@@ -187,6 +188,7 @@ namespace Loopie {
 
 			ImGui::EndMenu();
 		}
+
 	}
 
 	void HierarchyInterface::HotKeysSelectedEntiy(const InputEventManager& inputEvent)
@@ -262,6 +264,7 @@ namespace Loopie {
 		
 			newCanvas->AddComponent<GUICanvas>();
 			newCanvas->AddComponent<RectTransform>();
+			newCanvas->AddComponent<GUIRender>();
 
 		//Add all the components of the Canvas
 		//Rectangle Transform

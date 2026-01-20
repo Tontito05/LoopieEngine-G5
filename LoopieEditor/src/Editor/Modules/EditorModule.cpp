@@ -270,27 +270,38 @@ namespace Loopie
 		GUICanvas* canvas = Canvas->GetComponent<GUICanvas>();
 		if (!canvas) return;
 
-		// --- 1. PREPARE THE PROJECTION MATRIX ---
+		UniformValue projectionUniform;
 		matrix4 projection;
-		if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
-			vec2 resolution = canvas->GetReferenceResolution();
-			projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
-			Renderer::DisableDepth();
+
+		if (camera == m_game.GetCamera()) //Render for game
+		{
+			// --- 1. PREPARE THE PROJECTION MATRIX ---
+			if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
+				vec2 resolution = canvas->GetReferenceResolution();
+				projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
+				Renderer::DisableDepth();
+			}
+			else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
+				projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+				Renderer::EnableDepth();
+			}
+
+			// Pack the matrix into your engine's UniformValue system
+			projectionUniform.type = UniformType::UniformType_mat4;
+			projectionUniform.value = projection;
+
+			Renderer::EnableStencil();
+			Renderer::Clear();
 		}
-		else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
+		else if (camera == m_scene.GetCamera()) //Render for scene
+		{ 
 			projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
 			Renderer::EnableDepth();
-		}
-
-		// Pack the matrix into your engine's UniformValue system
-		UniformValue projectionUniform;
-		projectionUniform.type = UniformType::UniformType_mat4;
-		projectionUniform.value = projection;
-
-		Renderer::EnableStencil();
-		Renderer::Clear();
-
-		auto selectedEntity = HierarchyInterface::s_SelectedEntity.lock();
+			projectionUniform.type = UniformType::UniformType_mat4;
+			projectionUniform.value = projection;
+			Renderer::EnableStencil();
+			Renderer::Clear();
+		};
 
 		// --- 2. ITERATE UI ENTITIES ---
 		for (const auto& entity : m_currentScene->GetAllUIEntities(Canvas))
@@ -308,7 +319,7 @@ namespace Loopie
 			material->SetShaderVariable("projection", projectionUniform);
 
 			// --- 4. RENDER LOGIC ---
-			if (!Renderer::IsGizmoActive() || entity != selectedEntity) {
+			if (!Renderer::IsGizmoActive()) {
 				Renderer::AddRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
 			}
 			else {

@@ -15,6 +15,13 @@ namespace Loopie
         }
     }
 
+    GUIRender::GUIRender() {
+        
+	}
+
+	GUIRender::~GUIRender() {
+	}
+
     std::shared_ptr<Mesh> GUIRender::CreateQuad() {
 
         Metadata& meta = AssetRegistry::GetOrCreateMetadata("assets/models/primitives/plane.fbx");
@@ -26,7 +33,7 @@ namespace Loopie
 
     std::shared_ptr<Material> GUIRender::GetDefaultGUI() {
 
-        auto mat = std::make_shared<Material>(UUID::Generate());
+        std::shared_ptr<Material> mat = Material::GetDefault();
 
         mat->SetShader(Shader("assets/shaders/GUIShader.shader"));
 
@@ -37,5 +44,23 @@ namespace Loopie
 
         return mat;
     }
+
+    JsonNode GUIRender::Serialize(JsonNode& parent) const {
+        JsonNode guiRenderObj = parent.CreateObjectField("GUIRender");
+        if (material) {
+            guiRenderObj.CreateField<std::string>("Material", material->GetUUID().Get());
+        }
+		return guiRenderObj;
+	}
+
+    void GUIRender::Deserialize(const JsonNode& data) {
+        if (data.Contains("Material")) {
+            UUID matUUID = UUID(data.Child("Material").GetValue<std::string>().Result);
+            Metadata* meta = AssetRegistry::GetMetadata(matUUID);
+            if (meta) {
+                material = ResourceManager::GetMaterial(*meta);
+            }
+        }
+	}
 
 }

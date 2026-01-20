@@ -17,6 +17,8 @@ namespace Loopie {
         void SetMaterial(std::shared_ptr<Material> mat) { material = mat; }
 
         void Init() override;
+		JsonNode Serialize(JsonNode& parent) const override;
+		void Deserialize(const JsonNode& data) override;
 
         //Functions
         void SetAsQuad();

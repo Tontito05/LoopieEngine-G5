@@ -34,8 +34,8 @@ namespace Loopie {
 		void OnInterfaceRender()override;
 	private:
 		void RenderWorld(Camera* camera);
-		void RenderGUI(Camera* camera, std::shared_ptr<Entity> Canvas);
-		/// Test
+		void RenderGUI(Camera* camera, std::shared_ptr<Entity> Canvas);	
+
 		void CreateBakerHouse();
 		void CreateCity();
 		//void MousePick(Camera* camera);
