@@ -1,7 +1,6 @@
 #include "InspectorInterface.h"
 #include "Editor/Interfaces/Workspace/HierarchyInterface.h"
 #include "Editor/Interfaces/Workspace/AssetsExplorerInterface.h"
-
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/GUICanvas.h"
 #include "Loopie/Core/Log.h"
@@ -56,7 +55,7 @@ namespace Loopie {
 
 		std::vector<Component*> components = entity->GetComponents();
 		for (auto* component : components) {
-			if (component->GetTypeID() == Transform::GetTypeIDStatic()) {
+			if (component->GetTypeID() == Transform::GetTypeIDStatic() && !entity->HasComponent<RectTransform>()) {
 				DrawTransform(static_cast<Transform*>(component));
 			}
 			else if (component->GetTypeID() == Camera::GetTypeIDStatic()) {
@@ -70,7 +69,6 @@ namespace Loopie {
 			}
 			else if (component->GetTypeID() == RectTransform::GetTypeIDStatic()) {
 				DrawRectTransform(static_cast<RectTransform*>(component));
-
 			}
 		}
 		AddComponent(entity);
