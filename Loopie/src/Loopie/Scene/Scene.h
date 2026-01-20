@@ -47,7 +47,7 @@ namespace Loopie {
 		std::vector<std::shared_ptr<Entity>> GetAllEntitiesHierarchical(std::shared_ptr<Entity> parentEntity = nullptr) const;
 		std::vector<std::shared_ptr<Entity>> GetAllSiblings(std::shared_ptr<Entity> parentEntity = nullptr) const;
 		bool ReadAndLoadSceneFile(std::string filePath, bool safeSceneAsLastLoaded = true);
-		const std::vector<std::shared_ptr<Entity>> GetAllUIEntities(std::shared_ptr<Entity> parentEntity) const;
+		const std::vector<std::shared_ptr<Entity>> GetAllUIEntities(std::shared_ptr<Entity> Canvas) const;
 
 	public:
 

@@ -423,27 +423,27 @@ namespace Loopie {
 		m_entities.erase(entity->GetUUID());
 	}
 
-	const std::vector<std::shared_ptr<Entity>> Scene::GetAllUIEntities(std::shared_ptr<Entity> parentEntity) const
+	const std::vector<std::shared_ptr<Entity>> Scene::GetAllUIEntities(std::shared_ptr<Entity> Canvas) const
 	{
 		std::vector<std::shared_ptr<Entity>> entities;
 
-		if (!parentEntity)
+		if (!Canvas)
 		{
-			parentEntity = m_rootEntity;
+			return entities;
 		}
 
-		CollectUIEntitiesRecursive(parentEntity, entities);
+		CollectUIEntitiesRecursive(Canvas, entities);
 		return entities;
 	}
 
-	void Scene::CollectUIEntitiesRecursive(std::shared_ptr<Entity> entity, std::vector<std::shared_ptr<Entity>>& outEntities) const 
+	void Scene::CollectUIEntitiesRecursive(std::shared_ptr<Entity> parent, std::vector<std::shared_ptr<Entity>>& outEntities) const 
 	{
-		if (!entity)
+		if (!parent)
 			return;
-		if (entity->HasComponent<RectTransform>()) {
-			outEntities.push_back(entity);
+		if (parent->HasComponent<RectTransform>()) {
+			outEntities.push_back(parent);
 		}
-		for (const auto& child : entity->GetChildren())
+		for (const auto& child : parent->GetChildren())
 		{
 			CollectUIEntitiesRecursive(child, outEntities);
 		}

@@ -125,7 +125,7 @@ namespace Loopie
 			RenderWorld(m_scene.GetCamera());
 			for (const auto& entity : m_hierarchy.canvasEntity)
 			{
-				RenderGUI(m_scene.GetCamera(), entity.get());
+				RenderGUI(m_scene.GetCamera(), entity);
 			}
 			Renderer::EndScene();
 			m_scene.EndScene();
@@ -139,7 +139,7 @@ namespace Loopie
 				RenderWorld(m_game.GetCamera());
 				for (const auto& entity : m_hierarchy.canvasEntity)
 				{
-					RenderGUI(m_scene.GetCamera(), entity.get());
+					RenderGUI(m_scene.GetCamera(), entity);
 				}
 				Renderer::EndScene();
 			}
@@ -264,17 +264,34 @@ namespace Loopie
 		}
 	}
 
-	void EditorModule::RenderGUI(Camera* camera, Entity* Canvas)
+	void EditorModule::RenderGUI(Camera* camera, std::shared_ptr<Entity> Canvas)
 	{
+		GUICanvas* canvas = Canvas->GetComponent<GUICanvas>();
+		if (!canvas) return;
+
+		matrix4 projection;
+
+		if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
+
+			vec2 resolution = canvas->GetReferenceResolution();
+			projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
+			
+			Renderer::DisableDepth();
+		}
+		else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
+
+			projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+			Renderer::EnableDepth();
+		}
+
 		Renderer::EnableStencil();
-		Renderer::EnableDepth();
 		Renderer::Clear();
 
 		std::vector<MeshRenderer*> renderers;
 		renderers.reserve(1);
 
 		auto selectedEntity = HierarchyInterface::s_SelectedEntity.lock();
-		for (const auto& entity : Canvas->GetChildren())
+		for (const auto& entity : m_currentScene->GetAllUIEntities(Canvas))
 		{
 			if (!entity->GetIsActive())
 				continue;
@@ -310,12 +327,12 @@ namespace Loopie
 					Renderer::SetStencilOp(Renderer::StencilOp::KEEP, Renderer::StencilOp::KEEP, Renderer::StencilOp::REPLACE);
 					Renderer::SetStencilMask(0xFF);
 
-					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), Canvas->GetComponent<GUICanvas>()->GetMaterial(), entity->GetTransform());
+					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), renderer->GetMaterial(), entity->GetTransform());
 
 					Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
 					Renderer::SetStencilMask(0x00);
 
-					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), Canvas->GetComponent<GUICanvas>()->GetMaterial(), entity->GetTransform());
+					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
 
 					Renderer::SetStencilMask(0xFF);
 					Renderer::EnableDepth();
@@ -323,7 +340,9 @@ namespace Loopie
 				}
 			}
 		}
+		
 		Renderer::DisableStencil();
+		Renderer::EndScene();
 	}
 
 	void EditorModule::CreateBakerHouse()

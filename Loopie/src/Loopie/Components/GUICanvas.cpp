@@ -6,14 +6,14 @@ namespace Loopie {
 
         }
 
-		GUICanvas::~GUICanvas() {
-			material.reset();
+		GUICanvas::~GUICanvas() 
+        {
+
 		}
 
         void GUICanvas::Init() 
         {
-            material = Material::GetDefault();
-            material->SetShader(Shader("assets/shaders/GUIShader.shader"));
+
         }
 
         JsonNode GUICanvas::Serialize(JsonNode& parent) const {

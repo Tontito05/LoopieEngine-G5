@@ -141,7 +141,7 @@ namespace Loopie {
 						std::shared_ptr<Entity> buttonEntity = m_scene->CreateEntity("Button", entity);
 						//Add Button specific components here
 						SelectEntity(buttonEntity);
-						buttonEntity->AddComponent<GUIRect>();
+						buttonEntity->AddComponent<RectTransform>();
 					}
 				}
 				ImGui::EndMenu();
@@ -185,14 +185,6 @@ namespace Loopie {
 			if (ImGui::MenuItem("Plane"))
 				SelectEntity(CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Plane", entity));
 
-			ImGui::EndMenu();
-		}
-
-		if (ImGui::BeginMenu("UI"))
-		{
-			if (ImGui::MenuItem("Canvas"))
-				SelectEntity(CreateCanvasEntity("Canvas", entity));
-			
 			ImGui::EndMenu();
 		}
 	}

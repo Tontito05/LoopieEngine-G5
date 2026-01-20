@@ -3,6 +3,7 @@
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Resources/Types/Texture.h"
 #include "Loopie/Resources/Types/Material.h"
+#include "Loopie/Components/Camera.h"
 
 
 namespace Loopie {
@@ -14,7 +15,6 @@ namespace Loopie {
 
         enum class RenderMode {
             OVERLAY,
-            CAMERA,
             WORLD_SPACE
         };
 
@@ -24,13 +24,10 @@ namespace Loopie {
 		// Getters
 		RenderMode GetRenderMode() const { return mode; }
 		vec2 GetReferenceResolution() const { return referenceResolution; }
-        std::shared_ptr<Material> GetMaterial() const { return material; }
 
 		// Setters
 		void SetRenderMode(RenderMode _mode) { mode = _mode; }
 		void SetReferenceResolution(const vec2& resolution) { referenceResolution = resolution; }
-		void SetMaterial(std::shared_ptr<Material> mat) { material = mat; }
-
 
         //Overrides
         void Init() override;
@@ -41,8 +38,8 @@ namespace Loopie {
     private:
 
         RenderMode mode = RenderMode::OVERLAY;
-        std::shared_ptr<Material> material = nullptr;
         vec2 referenceResolution = vec2(1920, 1080);
+		Camera* CanvasCamera = nullptr;
     };
 
 }

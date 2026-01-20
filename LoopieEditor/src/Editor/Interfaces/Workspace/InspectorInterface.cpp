@@ -3,7 +3,6 @@
 #include "Editor/Interfaces/Workspace/AssetsExplorerInterface.h"
 
 #include "Loopie/Components/Transform.h"
-#include "Loopie/Components/GUIRect.h"
 #include "Loopie/Components/GUICanvas.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
@@ -426,37 +425,6 @@ namespace Loopie {
 			ImGui::Checkbox("Invisible", &rectTransform->invisible);
 			ImGui::SameLine();
 			ImGui::Checkbox("Cut Childs", &rectTransform->cut_childs);
-		}
-	}
-
-	void InspectorInterface::DrawGUIRect(GUIRect* Rect)
-	{
-		if (ImGui::CollapsingHeader("Rectangle Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-
-			vec2 anchorMin = Rect->GetAnchorMin();
-			vec2 anchorMax = Rect->GetAnchorMax();
-
-			vec2 pivot = Rect->GetPivot();
-
-			vec2 size = Rect->GetSize();
-			vec2 offset = Rect->GetOffset();
-
-			if (ImGui::DragFloat2("Anchor Min", &anchorMin.x, 0.1f)) {
-				Rect->SetAnchorMin(anchorMin);
-			}
-			if (ImGui::DragFloat2("Anchor Max", &anchorMax.x, 0.5f)) {
-				Rect->SetAnchorMax(anchorMax);
-			}
-			if (ImGui::DragFloat2("Pibot ", &pivot.x, 0.1f)) {
-				Rect->SetPivot(pivot);
-			}
-			if (ImGui::DragFloat2("Size", &size.x, 1.0f)) {
-				Rect->SetSize(size);
-			}
-			if (ImGui::DragFloat2("Offset", &offset.x, 1.0f)) {
-				Rect->SetOffset(offset);
-			}
-
 		}
 	}
 
