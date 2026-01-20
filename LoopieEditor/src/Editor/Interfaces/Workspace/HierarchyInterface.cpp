@@ -237,10 +237,6 @@ namespace Loopie {
 
 		return newEntity;
 	}
-<<<<<<< Updated upstream
-=======
-
-
 
 	std::shared_ptr<Entity> HierarchyInterface::CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
 	{
@@ -257,5 +253,4 @@ namespace Loopie {
 		return newCanvas;
 	}
 
->>>>>>> Stashed changes
 }
