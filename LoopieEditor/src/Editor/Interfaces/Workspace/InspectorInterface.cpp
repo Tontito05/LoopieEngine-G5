@@ -55,7 +55,7 @@ namespace Loopie {
 
 		std::vector<Component*> components = entity->GetComponents();
 		for (auto* component : components) {
-			if (component->GetTypeID() == Transform::GetTypeIDStatic()) {
+			if (component->GetTypeID() == Transform::GetTypeIDStatic() &&!entity->HasComponent<RectTransform>()) {
 				DrawTransform(static_cast<Transform*>(component));
 			}
 			else if (component->GetTypeID() == Camera::GetTypeIDStatic()) {
