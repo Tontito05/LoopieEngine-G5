@@ -304,6 +304,7 @@ namespace Loopie
 				if (entity == selected) {
 					//rect->DrawDebugBorders();
 				}
+
 			}
 		}
 

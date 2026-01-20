@@ -392,27 +392,34 @@ namespace Loopie {
 	{
 		if (ImGui::CollapsingHeader("Rect Transform", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+
 			if (ImGui::DragFloat2("Anchored Pos", &rectTransform->anchoredPosition.x, 1.0f)) {
-				rectTransform->CalculateRect(); // Recalculate immediately
+				rectTransform->SetAnchoredPosition(rectTransform->anchoredPosition);
 			}
 
 			if (ImGui::DragFloat2("Size Delta", &rectTransform->sizeDelta.x, 1.0f)) {
-				rectTransform->CalculateRect();
+				rectTransform->SetSizeDelta(rectTransform->sizeDelta);
 			}
 
 			ImGui::Separator();
 
 			if (ImGui::DragFloat2("Anchor Min", &rectTransform->anchorMin.x, 0.01f, 0.0f, 1.0f)) {
-				rectTransform->CalculateRect();
+				rectTransform->SetAnchorMin(rectTransform->anchorMin);
 			}
 
 			if (ImGui::DragFloat2("Anchor Max", &rectTransform->anchorMax.x, 0.01f, 0.0f, 1.0f)) {
-				rectTransform->CalculateRect();
+				rectTransform->SetAnchorMax(rectTransform->anchorMax);
 			}
 
 			if (ImGui::DragFloat2("Pivot", &rectTransform->pivot.x, 0.01f, 0.0f, 1.0f)) {
-				rectTransform->CalculateRect();
+				rectTransform->SetPivot(rectTransform->pivot);
 			}
+
+			ImGui::Separator();
+			
+			// Debug info
+			ImGui::Text("Screen Position: (%.1f, %.1f)", rectTransform->screenX, rectTransform->screenY);
+			ImGui::Text("Size: %.1f x %.1f", rectTransform->width, rectTransform->height);
 
 			ImGui::Separator();
 

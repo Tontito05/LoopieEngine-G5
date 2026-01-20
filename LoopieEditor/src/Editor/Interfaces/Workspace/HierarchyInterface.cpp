@@ -256,7 +256,7 @@ namespace Loopie {
 
 	std::shared_ptr<Entity> HierarchyInterface::CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
 	{
-		std::shared_ptr<Entity> newCanvas = CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Plane", parent);
+		std::shared_ptr<Entity> newCanvas = CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Canvas", parent);
 		
 		newCanvas->AddComponent<Canvas>();
 		newCanvas->AddComponent<RectTransform>();
@@ -266,7 +266,7 @@ namespace Loopie {
 
 	std::shared_ptr<Entity> HierarchyInterface::CreateButtonEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
 	{
-		std::shared_ptr<Entity> newButton= CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Plane", parent);		//Add all the components of the Button
+		std::shared_ptr<Entity> newButton= CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Button", parent);		//Add all the components of the Button
 
 		newButton->AddComponent<RectTransform>();
 

@@ -1,24 +1,16 @@
 [vertex]
-#version 460 core
-layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec2 aTexCoords;
+#version 330 core
 
-uniform mat4 lp_Projection;
-uniform mat4 model;
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec2 a_TexCoord;
 
-void main() {
-    gl_Position = lp_Projection * model * vec4(aPos, 0.0, 1.0);
-    TexCoords = aTexCoords;
-}
+uniform mat4 u_ViewProjection;
+uniform mat4 u_Model;
 
-
-[fragment]
-#version 460 core
-
-in vec3 vColor;
-out vec4 FragColor;
+out vec2 v_TexCoord;
 
 void main()
 {
-    FragColor = vec4(vColor, 1.0);
+    gl_Position = u_ViewProjection * u_Model * vec4(a_Position, 1.0);
+    v_TexCoord = a_TexCoord;
 }
