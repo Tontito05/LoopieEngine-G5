@@ -2,8 +2,7 @@
 #include "Loopie/Core/Log.h"
 #include "Loopie/Components/MeshRenderer.h"
 
-#include "Loopie/Components/GUICanvas.h"
-#include "Loopie/Components/GUIRender.h"
+#include "Loopie/Components/Canvas.h"
 #include "Loopie/Components/RectTransform.h"
 
 #include "Loopie/Resources/ResourceManager.h"
@@ -174,7 +173,7 @@ namespace Loopie {
 				SelectEntity(CreateCanvasEntity("Canvas", entity));
 			if (ImGui::MenuItem("Button"))
 			{
-				if (entity.get()->HasComponent<GUICanvas>())
+				if (entity.get()->HasComponent<Canvas>())
 				{
 					std::shared_ptr<Entity> buttonEntity = m_scene->CreateEntity("Button", entity);
 					//Add Button specific components here
@@ -258,9 +257,8 @@ namespace Loopie {
 	{
 		std::shared_ptr<Entity> newCanvas = m_scene->CreateEntity(name, parent);
 		
-			newCanvas->AddComponent<GUICanvas>();
-			newCanvas->AddComponent<RectTransform>();
-			newCanvas->AddComponent<GUIRender>();
+		newCanvas->AddComponent<RectTransform>();
+		newCanvas->AddComponent<Canvas>();
 
 		//Add all the components of the Canvas
 		//Rectangle Transform

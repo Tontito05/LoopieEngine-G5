@@ -17,8 +17,7 @@
 
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Components/Transform.h"
-#include "Loopie/Components/GUICanvas.h"
-#include "Loopie/Components/GUIRender.h"
+#include "Loopie/Components/Canvas.h"
 #include "Loopie/Resources/Types/Material.h"
 ///
 
@@ -267,83 +266,83 @@ namespace Loopie
 
 	void EditorModule::RenderGUI(Camera* camera, std::shared_ptr<Entity> Canvas)
 	{
-		GUICanvas* canvas = Canvas->GetComponent<GUICanvas>();
-		if (!canvas) return;
+		//GUICanvas* canvas = Canvas->GetComponent<GUICanvas>();
+		//if (!canvas) return;
 
-		UniformValue projectionUniform;
-		matrix4 projection;
+		//UniformValue projectionUniform;
+		//matrix4 projection;
 
-		if (camera == m_game.GetCamera()) //Render for game
-		{
-			// --- 1. PREPARE THE PROJECTION MATRIX ---
-			if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
-				vec2 resolution = canvas->GetReferenceResolution();
-				projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
-				Renderer::DisableDepth();
-			}
-			else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
-				projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
-				Renderer::EnableDepth();
-			}
+		//if (camera == m_game.GetCamera()) //Render for game
+		//{
+		//	// --- 1. PREPARE THE PROJECTION MATRIX ---
+		//	if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
+		//		vec2 resolution = canvas->GetReferenceResolution();
+		//		projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
+		//		Renderer::DisableDepth();
+		//	}
+		//	else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
+		//		projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+		//		Renderer::EnableDepth();
+		//	}
 
-			// Pack the matrix into your engine's UniformValue system
-			projectionUniform.type = UniformType::UniformType_mat4;
-			projectionUniform.value = projection;
+		//	// Pack the matrix into your engine's UniformValue system
+		//	projectionUniform.type = UniformType::UniformType_mat4;
+		//	projectionUniform.value = projection;
 
-			Renderer::EnableStencil();
-			Renderer::Clear();
-		}
-		else if (camera == m_scene.GetCamera()) //Render for scene
-		{ 
-			projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
-			Renderer::EnableDepth();
-			projectionUniform.type = UniformType::UniformType_mat4;
-			projectionUniform.value = projection;
-			Renderer::EnableStencil();
-			Renderer::Clear();
-		};
+		//	Renderer::EnableStencil();
+		//	Renderer::Clear();
+		//}
+		//else if (camera == m_scene.GetCamera()) //Render for scene
+		//{ 
+		//	projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+		//	Renderer::EnableDepth();
+		//	projectionUniform.type = UniformType::UniformType_mat4;
+		//	projectionUniform.value = projection;
+		//	Renderer::EnableStencil();
+		//	Renderer::Clear();
+		//};
 
-		// --- 2. ITERATE UI ENTITIES ---
-		for (const auto& entity : m_currentScene->GetAllUIEntities(Canvas))
-		{
-			if (!entity->GetIsActive()) continue;
+		//// --- 2. ITERATE UI ENTITIES ---
+		//for (const auto& entity : m_currentScene->GetAllUIEntities(Canvas))
+		//{
+		//	if (!entity->GetIsActive()) continue;
 
-			// Look for the specific UI renderer instead of MeshRenderer
-			GUIRender* guiRenderer = entity->GetComponent<GUIRender>();
-			if (!guiRenderer || !guiRenderer->GetMesh()) continue;
+		//	// Look for the specific UI renderer instead of MeshRenderer
+		//	GUIRender* guiRenderer = entity->GetComponent<GUIRender>();
+		//	if (!guiRenderer || !guiRenderer->GetMesh()) continue;
 
-			auto material = guiRenderer->GetMaterial();
+		//	auto material = guiRenderer->GetMaterial();
 
-			// --- 3. APPLY THE PROJECTION TO THE SHADER ---
-			// This ensures the vertex shader knows the screen dimensions
-			material->SetShaderVariable("projection", projectionUniform);
+		//	// --- 3. APPLY THE PROJECTION TO THE SHADER ---
+		//	// This ensures the vertex shader knows the screen dimensions
+		//	material->SetShaderVariable("projection", projectionUniform);
 
-			// --- 4. RENDER LOGIC ---
-			if (!Renderer::IsGizmoActive()) {
-				Renderer::AddRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
-			}
-			else {
-				// Selection Stencil Logic
-				Renderer::SetStencilFunc(Renderer::StencilFunc::ALWAYS, 1, 0xFF);
-				Renderer::SetStencilOp(Renderer::StencilOp::KEEP, Renderer::StencilOp::KEEP, Renderer::StencilOp::REPLACE);
-				Renderer::SetStencilMask(0xFF);
+		//	// --- 4. RENDER LOGIC ---
+		//	if (!Renderer::IsGizmoActive()) {
+		//		Renderer::AddRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
+		//	}
+		//	else {
+		//		// Selection Stencil Logic
+		//		Renderer::SetStencilFunc(Renderer::StencilFunc::ALWAYS, 1, 0xFF);
+		//		Renderer::SetStencilOp(Renderer::StencilOp::KEEP, Renderer::StencilOp::KEEP, Renderer::StencilOp::REPLACE);
+		//		Renderer::SetStencilMask(0xFF);
 
-				Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
+		//		Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
 
-				Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
-				Renderer::SetStencilMask(0x00);
+		//		Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
+		//		Renderer::SetStencilMask(0x00);
 
-				// Draw the outline using the selection material
-				Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
+		//		// Draw the outline using the selection material
+		//		Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
 
-				Renderer::SetStencilMask(0xFF);
-				Renderer::EnableDepth();
-				Renderer::DisableStencil();
-			}
-		}
+		//		Renderer::SetStencilMask(0xFF);
+		//		Renderer::EnableDepth();
+		//		Renderer::DisableStencil();
+		//	}
+		//}
 
-		Renderer::DisableStencil();
-		Renderer::EndScene();
+		//Renderer::DisableStencil();
+		//Renderer::EndScene();
 	}
 
 	void EditorModule::CreateBakerHouse()

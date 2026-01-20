@@ -8,18 +8,18 @@
 
 namespace Loopie {
 
-    class GUICanvas : public Component {
+    class Canvas : public Component {
     public:
 
-        DEFINE_TYPE(GUICanvas)
+        DEFINE_TYPE(Canvas)
 
         enum class RenderMode {
             OVERLAY,
             WORLD_SPACE
         };
 
-		GUICanvas();
-		~GUICanvas();
+		Canvas();
+		~Canvas();
 
 		// Getters
 		RenderMode GetRenderMode() const { return mode; }
