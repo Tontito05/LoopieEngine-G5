@@ -125,28 +125,6 @@ namespace Loopie {
 			SelectEntity(newEntity);
 		}
 
-
-			//Submenu for UI elements
-			if (ImGui::BeginMenu("UI"))
-			{
-				if (ImGui::MenuItem("Canvas"))
-				{
-					SelectEntity(CreateCanvasEntity("Canvas", entity));
-				}
-
-				if (ImGui::MenuItem("Button"))
-				{
-					if(entity.get()->HasComponent<GUICanvas>())
-					{
-						std::shared_ptr<Entity> buttonEntity = m_scene->CreateEntity("Button", entity);
-						//Add Button specific components here
-						SelectEntity(buttonEntity);
-						buttonEntity->AddComponent<RectTransform>();
-					}
-				}
-				ImGui::EndMenu();
-			}
-
 		/*if (ImGui::MenuItem("Copy"))
 		{
 
@@ -185,6 +163,24 @@ namespace Loopie {
 			if (ImGui::MenuItem("Plane"))
 				SelectEntity(CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Plane", entity));
 
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("UI"))
+		{
+			if (ImGui::MenuItem("Canvas"))
+				SelectEntity(CreateCanvasEntity("Canvas", entity));
+			if (ImGui::MenuItem("Button"))
+			{
+				if (entity.get()->HasComponent<GUICanvas>())
+				{
+					std::shared_ptr<Entity> buttonEntity = m_scene->CreateEntity("Button", entity);
+					//Add Button specific components here
+					SelectEntity(buttonEntity);
+					buttonEntity->AddComponent<RectTransform>();
+				}
+			}
+			
 			ImGui::EndMenu();
 		}
 	}

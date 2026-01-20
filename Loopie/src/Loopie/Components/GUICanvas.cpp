@@ -13,7 +13,6 @@ namespace Loopie {
 
         void GUICanvas::Init() 
         {
-
         }
 
         JsonNode GUICanvas::Serialize(JsonNode& parent) const {
