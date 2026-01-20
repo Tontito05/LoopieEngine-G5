@@ -1,35 +1,28 @@
 #include "GUIRender.h"
+#include "Loopie/Resources/AssetRegistry.h"
+#include "Loopie/Importers/MeshImporter.h"
+#include "Loopie/Resources/ResourceManager.h"
+
 
 namespace Loopie
 {
     void GUIRender::Init() {
-        // 1. Create a simple Quad (0,0 to 1,1)
-        // Your engine likely has a mesh utility for this
+
         uiMesh = CreateQuad();
 
-        // 2. Default UI material if none is set
         if (!material) {
             material = GetDefaultGUI();
         }
     }
 
-    //std::shared_ptr<Mesh> GUIRender::CreateQuad() {
+    std::shared_ptr<Mesh> GUIRender::CreateQuad() {
 
-    //    float vertices[] = {
-    //        // Pos      // UV
-    //        0.0f, 1.0f, 0.0f, 1.0f, // Bottom-left
-    //        1.0f, 1.0f, 1.0f, 1.0f, // Bottom-right
-    //        1.0f, 0.0f, 1.0f, 0.0f, // Top-right
-    //        0.0f, 0.0f, 0.0f, 0.0f  // Top-left
-    //    };
+        Metadata& meta = AssetRegistry::GetOrCreateMetadata("assets/models/primitives/plane.fbx");
+        MeshImporter::ImportModel("assets/models/primitives/plane.fbx", meta);
+        std::shared_ptr<Mesh> mesh = ResourceManager::GetMesh(meta, 0);
 
-    //    unsigned int indices[] = {
-    //        0, 1, 2, // First Triangle
-    //        2, 3, 0  // Second Triangle
-    //    };
-
-    //    return std::make_shared<Mesh>(vertices, indices);
-    //}
+        return mesh;
+    }
 
     std::shared_ptr<Material> GUIRender::GetDefaultGUI() {
 
