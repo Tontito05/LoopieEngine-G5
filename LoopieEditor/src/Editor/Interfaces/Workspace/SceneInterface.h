@@ -21,6 +21,8 @@ namespace Loopie {
 		void StartScene();
 		void EndScene();
 
+		ivec2 GetWindowSize() const;
+
    		Camera* GetCamera() { return m_camera->GetCamera(); }
 
 		void ChargeModel(const std::string& modelPath);

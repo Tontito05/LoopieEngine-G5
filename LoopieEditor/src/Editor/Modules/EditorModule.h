@@ -34,7 +34,8 @@ namespace Loopie {
 		void OnInterfaceRender()override;
 	private:
 		void RenderWorld(Camera* camera);
-		void RenderGUI(Camera* camera, std::shared_ptr<Entity> Canvas);	
+		void RenderUI(Camera* camera, std::shared_ptr<Entity> canvas, const vec2& viewportSize);	
+		void RenderUIRecursive(std::shared_ptr<Entity>, const matrix4& projection);
 
 		void CreateBakerHouse();
 		void CreateCity();

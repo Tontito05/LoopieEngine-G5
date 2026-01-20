@@ -9,6 +9,7 @@
 #include "Loopie/Render/Colors.h"
 
 #include "Loopie/Math/MathTypes.h"
+#include "Loopie/Math/MathUtils.h"
 
 #include "Loopie/Resources/ResourceManager.h"
 #include "Loopie/Importers/TextureImporter.h"
@@ -123,11 +124,13 @@ namespace Loopie
 			m_scene.StartScene();
 			Renderer::BeginScene(m_scene.GetCamera()->GetViewMatrix(), m_scene.GetCamera()->GetProjectionMatrix(), true);
 			RenderWorld(m_scene.GetCamera());
-			for (const auto& entity : m_hierarchy.canvasEntity)
-			{
-				RenderGUI(m_scene.GetCamera(), entity);
-			}
 			Renderer::EndScene();
+
+			vec2 sceneSize = { (float)m_scene.GetWindowSize().x, (float)m_scene.GetWindowSize().y};
+			for (const auto& canvas : m_hierarchy.canvasEntity)
+			{
+				RenderUI(m_scene.GetCamera(), canvas, sceneSize);
+			}
 			m_scene.EndScene();
 		}		
 
@@ -137,11 +140,12 @@ namespace Loopie
 			if (m_game.GetCamera() && m_game.GetCamera()->GetIsActive()) {
 				Renderer::BeginScene(m_game.GetCamera()->GetViewMatrix(), m_game.GetCamera()->GetProjectionMatrix(), false);
 				RenderWorld(m_game.GetCamera());
-				for (const auto& entity : m_hierarchy.canvasEntity)
-				{
-					RenderGUI(m_scene.GetCamera(), entity);
-				}
 				Renderer::EndScene();
+			}
+			vec2 gameSize = { (float)m_game.GetWindowSize().x, (float)m_game.GetWindowSize().y };
+			for (const auto& canvas : m_hierarchy.canvasEntity)
+			{
+				RenderUI(m_game.GetCamera(), canvas, gameSize);
 			}
 			m_game.EndScene();
 		}
@@ -264,85 +268,48 @@ namespace Loopie
 		}
 	}
 
-	void EditorModule::RenderGUI(Camera* camera, std::shared_ptr<Entity> Canvas)
+	void EditorModule::RenderUI(Camera* camera, std::shared_ptr<Entity> canvas, const vec2& viewportSize)
 	{
-		//GUICanvas* canvas = Canvas->GetComponent<GUICanvas>();
-		//if (!canvas) return;
+		Renderer::DisableDepth();
+		Renderer::EnableBlend();
+		
+		matrix4 projectionUI = ortho(0.0f, viewportSize.x, viewportSize.y, 0.0f, -1.0f, 1.0f);
 
-		//UniformValue projectionUniform;
-		//matrix4 projection;
+		RectTransform* canvasRect = canvas->GetComponent<RectTransform>();
+		if (canvasRect) {
+			canvasRect->width = viewportSize.x;
+			canvasRect->height = viewportSize.y;
+			canvasRect->screenX = 0;
+			canvasRect->screenY = 0;
+		}
 
-		//if (camera == m_game.GetCamera()) //Render for game
-		//{
-		//	// --- 1. PREPARE THE PROJECTION MATRIX ---
-		//	if (canvas->GetRenderMode() == GUICanvas::RenderMode::OVERLAY) {
-		//		vec2 resolution = canvas->GetReferenceResolution();
-		//		projection = glm::ortho(0.0f, resolution.x, resolution.y, 0.0f, -1.0f, 1.0f);
-		//		Renderer::DisableDepth();
-		//	}
-		//	else if (canvas->GetRenderMode() == GUICanvas::RenderMode::WORLD_SPACE) {
-		//		projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
-		//		Renderer::EnableDepth();
-		//	}
+		RenderUIRecursive(canvas, projectionUI);
 
-		//	// Pack the matrix into your engine's UniformValue system
-		//	projectionUniform.type = UniformType::UniformType_mat4;
-		//	projectionUniform.value = projection;
+		Renderer::EnableDepth();
+		Renderer::DisableBlend();
+	}
 
-		//	Renderer::EnableStencil();
-		//	Renderer::Clear();
-		//}
-		//else if (camera == m_scene.GetCamera()) //Render for scene
-		//{ 
-		//	projection = camera->GetProjectionMatrix() * camera->GetViewMatrix();
-		//	Renderer::EnableDepth();
-		//	projectionUniform.type = UniformType::UniformType_mat4;
-		//	projectionUniform.value = projection;
-		//	Renderer::EnableStencil();
-		//	Renderer::Clear();
-		//};
+	void EditorModule::RenderUIRecursive(std::shared_ptr<Entity> entity, const matrix4& projection)
+	{
+		if (!entity->GetIsActive()) return;
 
-		//// --- 2. ITERATE UI ENTITIES ---
-		//for (const auto& entity : m_currentScene->GetAllUIEntities(Canvas))
-		//{
-		//	if (!entity->GetIsActive()) continue;
+		RectTransform* rect = entity->GetComponent<RectTransform>();
+		if (rect) {
+			rect->CalculateRect();
 
-		//	// Look for the specific UI renderer instead of MeshRenderer
-		//	GUIRender* guiRenderer = entity->GetComponent<GUIRender>();
-		//	if (!guiRenderer || !guiRenderer->GetMesh()) continue;
+			if (Renderer::IsGizmoActive())
+			{
+				auto selected = HierarchyInterface::s_SelectedEntity.lock();
+				if (entity == selected) {
+					rect->DrawDebugBorders();
+				}
+			}
+		}
 
-		//	auto material = guiRenderer->GetMaterial();
-
-		//	// --- 3. APPLY THE PROJECTION TO THE SHADER ---
-		//	// This ensures the vertex shader knows the screen dimensions
-		//	material->SetShaderVariable("projection", projectionUniform);
-
-		//	// --- 4. RENDER LOGIC ---
-		//	if (!Renderer::IsGizmoActive()) {
-		//		Renderer::AddRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
-		//	}
-		//	else {
-		//		// Selection Stencil Logic
-		//		Renderer::SetStencilFunc(Renderer::StencilFunc::ALWAYS, 1, 0xFF);
-		//		Renderer::SetStencilOp(Renderer::StencilOp::KEEP, Renderer::StencilOp::KEEP, Renderer::StencilOp::REPLACE);
-		//		Renderer::SetStencilMask(0xFF);
-
-		//		Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), material, entity->GetTransform());
-
-		//		Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
-		//		Renderer::SetStencilMask(0x00);
-
-		//		// Draw the outline using the selection material
-		//		Renderer::FlushRenderItem(guiRenderer->GetMesh()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
-
-		//		Renderer::SetStencilMask(0xFF);
-		//		Renderer::EnableDepth();
-		//		Renderer::DisableStencil();
-		//	}
-		//}
-
-		//Renderer::DisableStencil();
-		//Renderer::EndScene();
+		for (const auto& child : entity->GetChildren()) 
+		{
+			RenderUIRecursive(child, projection);
+		}
 	}
 
 	void EditorModule::CreateBakerHouse()

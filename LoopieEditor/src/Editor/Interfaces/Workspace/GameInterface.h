@@ -17,6 +17,8 @@ namespace Loopie {
 
 		Camera* GetCamera();
 
+		ivec2 GetWindowSize() const;
+
 	private:
 		bool m_visible = false;
 		std::shared_ptr<FrameBuffer> m_buffer;

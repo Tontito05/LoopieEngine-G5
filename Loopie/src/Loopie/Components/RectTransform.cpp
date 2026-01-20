@@ -161,3 +161,8 @@ void Loopie::RectTransform::SetAnchoredPosition(Loopie::vec2 anchPos)
 {
 	this->anchoredPosition = anchPos;
 }
+
+void Loopie::RectTransform::DrawDebugBorders() const
+{
+
+}

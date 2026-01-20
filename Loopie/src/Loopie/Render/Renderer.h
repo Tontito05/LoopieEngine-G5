@@ -83,6 +83,9 @@ namespace Loopie {
 		static void SetStencilOp(StencilOp stencil_fail, StencilOp depth_fail, StencilOp pass);
 		static void SetStencilFunc(StencilFunc cond, int ref, unsigned int mask);
 
+		static void EnableBlend();
+		static void DisableBlend();
+
 	private:
 		static void SetRenderUniforms(std::shared_ptr<Material> material, const Transform* transform);
 		static void SetRenderUniforms(std::shared_ptr<Material> material, const matrix4& modelMatrix);

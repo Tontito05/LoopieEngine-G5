@@ -137,6 +137,11 @@ namespace Loopie {
 		m_buffer->Unbind();
 	}
 
+	ivec2 SceneInterface::GetWindowSize() const
+	{
+		return m_windowSize;
+	}
+
 	void SceneInterface::HotKeysSelectedEntiy(const InputEventManager& inputEvent)
 	{
 		auto selectedEntity = HierarchyInterface::s_SelectedEntity.lock();

@@ -137,11 +137,11 @@ namespace Loopie {
 	}
 	void Renderer::EnableDepth()
 	{
-			glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 	}
 	void Renderer::DisableDepth()
 	{
-			glDisable(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
 	}
 	void Renderer::EnableStencil()
 	{
@@ -162,5 +162,16 @@ namespace Loopie {
 	void Renderer::SetStencilFunc(StencilFunc cond, int ref, unsigned int mask)
 	{
 		glStencilFunc((unsigned int)cond, ref, mask);
+	}
+
+	void Renderer::EnableBlend()
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	void Renderer::DisableBlend()
+	{
+		glDisable(GL_BLEND);
 	}
 }
