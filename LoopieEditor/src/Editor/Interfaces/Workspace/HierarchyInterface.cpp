@@ -3,7 +3,11 @@
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Resources/ResourceManager.h"
 #include "Loopie/Importers/MeshImporter.h"
+#include "Loopie/Components/RectTransform.h"
+#include "Loopie/Components/Canvas.h"
+#include "Loopie/Components/CanvasScaler.h"
 
+#include "Loopie/Helpers/LoopieHelpers.h"
 #include "Editor/Interfaces/Workspace/SceneInterface.h"
 #include <imgui.h>
 
@@ -161,6 +165,13 @@ namespace Loopie {
 
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::BeginMenu("UI"))
+		{
+			if (ImGui::MenuItem("Canvas"))
+				SelectEntity(CreateCanvas(entity));
+			ImGui::EndMenu();
+		}
 	}
 
 	void HierarchyInterface::HotKeysSelectedEntiy(const InputEventManager& inputEvent)
@@ -227,5 +238,19 @@ namespace Loopie {
 			renderer->SetMesh(mesh);
 
 		return newEntity;
+	}
+	std::shared_ptr<Entity> HierarchyInterface::CreateCanvas(const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> canvas = m_scene->CreateEntity("Canvas", parent);
+		canvas->AddComponent<RectTransform>();
+		canvas->AddComponent<Canvas>();
+		canvas->AddComponent<CanvasScaler>();
+
+		std::shared_ptr<VertexArray>& vao = std::shared_ptr<VertexArray>();
+		Helper::CreateRectBorder(vao);
+
+		canvas->GetComponent<Canvas>()->SetVAO(vao);
+
+		return canvas;
 	}
 }

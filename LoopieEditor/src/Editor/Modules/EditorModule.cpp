@@ -17,6 +17,12 @@
 
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/RectTransform.h"
+#include "Loopie/Components/Canvas.h"
+#include "Loopie/Components/CanvasScaler.h"
+
+#include "Loopie/Helpers/LoopieHelpers.h"
+
 #include "Loopie/Resources/Types/Material.h"
 ///
 
@@ -196,6 +202,11 @@ namespace Loopie
 		{
 			if (!entity->GetIsActive())
 				continue;
+
+			if (entity->HasComponent<Canvas>()) {
+				Renderer::AddRenderItem(entity->GetComponent<Canvas>()->GetVAO(), Material::GetDefault(), entity->GetTransform());
+				continue;
+			}
 
 			const std::vector<Component*>& components = entity->GetComponents();
 			renderers.clear();

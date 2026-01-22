@@ -3,6 +3,9 @@
 #include "Editor/Interfaces/Workspace/AssetsExplorerInterface.h"
 
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/RectTransform.h"
+#include "Loopie/Components/Canvas.h"
+#include "Loopie/Components/CanvasScaler.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -55,7 +58,7 @@ namespace Loopie {
 
 		std::vector<Component*> components = entity->GetComponents();
 		for (auto* component : components) {
-			if (component->GetTypeID() == Transform::GetTypeIDStatic()) {
+			if (component->GetTypeID() == Transform::GetTypeIDStatic() && !component->GetOwner()->HasComponent<RectTransform>()) {
 				DrawTransform(static_cast<Transform*>(component));
 			}
 			else if (component->GetTypeID() == Camera::GetTypeIDStatic()) {
@@ -63,6 +66,15 @@ namespace Loopie {
 			}
 			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
 				DrawMeshRenderer(static_cast<MeshRenderer*>(component));
+			}
+			else if (component->GetTypeID() == RectTransform::GetTypeIDStatic()) {
+				DrawRectTransform(static_cast<RectTransform*>(component));
+			}
+			else if (component->GetTypeID() == Canvas::GetTypeIDStatic()) {
+				DrawCanvas(static_cast<Canvas*>(component));
+			}
+			else if (component->GetTypeID() == CanvasScaler::GetTypeIDStatic()) {
+				DrawCanvasScaler(static_cast<CanvasScaler*>(component));
 			}
 		}
 		AddComponent(entity);
@@ -379,6 +391,106 @@ namespace Loopie {
 		}
 
 		RemoveComponent(meshRenderer);	
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawRectTransform(RectTransform* rect)
+	{
+		Canvas* root = rect->FindRootCanvas();
+		bool isOverlay = (root && root->Mode == RenderMode::ScreenSpaceOverlay);
+
+		if (isOverlay) {
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Mode: Screen Space Overlay (Transform Locked)");
+			ImGui::BeginDisabled();
+		}
+
+		ImGui::PushID(rect);
+		if (ImGui::CollapsingHeader("RectTransform", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bool changed = false;
+
+			// Posición Anclada (X, Y, Z)
+			if (ImGui::DragFloat3("Pos", &rect->AnchoredPosition.x, 0.1f)) changed = true;
+
+			// Tamaño (Width, Height)
+			if (ImGui::DragFloat("Width", &rect->Width, 0.1f)) changed = true;
+			if (ImGui::DragFloat("Height", &rect->Height, 0.1f)) changed = true;
+
+			ImGui::Separator();
+
+			// Anchors
+			if (ImGui::DragFloat2("Anchor Min", &rect->AnchorMin.x, 0.01f, 0.0f, 1.0f)) changed = true;
+			if (ImGui::DragFloat2("Anchor Max", &rect->AnchorMax.x, 0.01f, 0.0f, 1.0f)) changed = true;
+
+			// Pivot
+			if (ImGui::DragFloat2("Pivot", &rect->Pivot.x, 0.01f, 0.0f, 1.0f)) changed = true;
+
+			ImGui::Separator();
+
+			// Transformación extra (Rotation y Scale)
+			if (ImGui::DragFloat3("Rotation", &rect->Rotation.x, 0.5f)) changed = true;
+			if (ImGui::DragFloat3("Scale", &rect->Scale.x, 0.1f)) changed = true;
+
+			if (isOverlay) {
+				ImGui::EndDisabled();
+			}
+
+			if (changed) {
+				rect->MarkDirty();
+				rect->RefreshMatrix();
+				// Como el RectTransform sincroniza con el Transform real, 
+				// el Octree debe saber que el objeto se movió.
+				Application::GetInstance().GetScene().GetOctree().Rebuild();
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawCanvas(Canvas* canvas)
+	{
+		ImGui::PushID(canvas);
+		if (ImGui::CollapsingHeader("Canvas", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			// Selector de Render Mode
+			const char* modes[] = { "Screen Space Overlay", "World Space" };
+			int currentMode = (int)canvas->Mode;
+			if (ImGui::Combo("Render Mode", &currentMode, modes, IM_ARRAYSIZE(modes)))
+			{
+				canvas->Mode = (RenderMode)currentMode;
+				canvas->NotifyHierarchyDirty();
+			}
+
+			// Toggle de Pixel Perfect
+			if (ImGui::Checkbox("Pixel Perfect", &canvas->PixelPerfect))
+			{
+				canvas->NotifyHierarchyDirty();
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawCanvasScaler(CanvasScaler* scaler)
+	{
+		ImGui::PushID(scaler);
+		if (ImGui::CollapsingHeader("Canvas Scaler", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			// UI Scale Mode
+			const char* modes[] = { "Constant Pixel Size", "Scale With Screen Size" };
+			int currentMode = (int)scaler->Mode;
+			if (ImGui::Combo("Scale Mode", &currentMode, modes, IM_ARRAYSIZE(modes)))
+			{
+				scaler->Mode = (ScaleMode)currentMode;
+			}
+
+			if (scaler->Mode == ScaleMode::ScaleWithScreenSize)
+			{
+				// Resolución de referencia (donde diseñaste la UI)
+				ImGui::DragFloat2("Ref Resolution", &scaler->ReferenceResolution.x, 1.0f);
+
+				// Slider para el Match (0 = Ancho, 1 = Alto)
+				ImGui::SliderFloat("Match (W/H)", &scaler->MatchWidthOrHeight, 0.0f, 1.0f);
+			}
+		}
 		ImGui::PopID();
 	}
 
