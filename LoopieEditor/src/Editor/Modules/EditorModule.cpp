@@ -223,8 +223,11 @@ namespace Loopie
 				//	entity->GetComponent<RectTransform>()->Rotation = vec3(entity->GetTransform()->GetLocalEulerAngles());
 				//	entity->GetComponent<RectTransform>()->Scale = vec3(entity->GetTransform()->GetLocalScale());
 				//}
-				continue;
 			}
+
+			//if (auto img = entity->GetComponent<Image>()) {
+			//	entity->GetComponent<MeshRenderer>()->SetMaterial(img->GetMaterial());
+			//}
 
 			const std::vector<Component*>& components = entity->GetComponents();
 			renderers.clear();
@@ -281,13 +284,17 @@ namespace Loopie
 			m_currentScene->GetOctree().DebugDraw(Color::GREEN);
 		}
 
-		for (auto& [uuid, entity] : m_currentScene->GetAllEntities()) {
-			if (entity->HasComponent<Canvas>() && entity->GetIsActive())
-			{
-				entity->GetComponent<Canvas>()->UpdateUIHierarchy();
-				Renderer::AddRenderUIItem(entity->GetComponent<Canvas>()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
-			}
-		}
+		//for (auto& [uuid, entity] : m_currentScene->GetAllEntities()) {
+		//	if (entity->HasComponent<Canvas>() && entity->GetIsActive())
+		//	{
+		//		entity->GetComponent<Canvas>()->UpdateUIHierarchy();
+		//		Renderer::AddRenderUIItem(entity->GetComponent<Canvas>()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
+		//	}
+		//	if (entity->HasComponent<Image>() && entity->GetIsActive())
+		//	{
+		//		Renderer::AddRenderUIItem(entity->GetComponent<Image>()->GetVAO(), entity->GetComponent<Image>()->GetMaterial(), entity->GetTransform());
+		//	}
+		//}
 	}
 
 	void EditorModule::RenderUIElement(Entity* entity, const matrix4& projection)

@@ -1,11 +1,13 @@
 #include "InspectorInterface.h"
 #include "Editor/Interfaces/Workspace/HierarchyInterface.h"
+#include "Editor/Interfaces/Workspace/SceneInterface.h"
 #include "Editor/Interfaces/Workspace/AssetsExplorerInterface.h"
 
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/RectTransform.h"
 #include "Loopie/Components/Canvas.h"
 #include "Loopie/Components/CanvasScaler.h"
+#include "Loopie/Components/Image.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -64,7 +66,7 @@ namespace Loopie {
 			else if (component->GetTypeID() == Camera::GetTypeIDStatic()) {
 				DrawCamera(static_cast<Camera*>(component));
 			}
-			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
+			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic() && !component->GetOwner()->HasComponent<RectTransform>()) {
 				DrawMeshRenderer(static_cast<MeshRenderer*>(component));
 			}
 			else if (component->GetTypeID() == RectTransform::GetTypeIDStatic()) {
@@ -75,6 +77,9 @@ namespace Loopie {
 			}
 			else if (component->GetTypeID() == CanvasScaler::GetTypeIDStatic()) {
 				DrawCanvasScaler(static_cast<CanvasScaler*>(component));
+			}
+			else if (component->GetTypeID() == Image::GetTypeIDStatic()) {
+				DrawImage(static_cast<Image*>(component));
 			}
 		}
 		AddComponent(entity);
@@ -399,7 +404,7 @@ namespace Loopie {
 		Canvas* root = rect->FindRootCanvas();
 		bool isOverlay = (root && root->Mode == RenderMode::ScreenSpaceOverlay);
 
-		if (isOverlay) {
+		if (isOverlay && rect->GetOwner()->HasComponent<Canvas>()) {
 			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Mode: Screen Space Overlay (Transform Locked)");
 			ImGui::BeginDisabled();
 		}
@@ -418,28 +423,13 @@ namespace Loopie {
 
 			ImGui::Separator();
 
-			// Anchors
-			if (ImGui::DragFloat2("Anchor Min", &rect->AnchorMin.x, 0.01f, 0.0f, 1.0f)) changed = true;
-			if (ImGui::DragFloat2("Anchor Max", &rect->AnchorMax.x, 0.01f, 0.0f, 1.0f)) changed = true;
-
-			// Pivot
-			if (ImGui::DragFloat2("Pivot", &rect->Pivot.x, 0.01f, 0.0f, 1.0f)) changed = true;
-
-			ImGui::Separator();
-
-			// Transformación extra (Rotation y Scale)
-			if (ImGui::DragFloat3("Rotation", &rect->Rotation.x, 0.5f)) changed = true;
-			if (ImGui::DragFloat3("Scale", &rect->Scale.x, 0.1f)) changed = true;
-
-			if (isOverlay) {
+			if (isOverlay && rect->GetOwner()->HasComponent<Canvas>()) {
 				ImGui::EndDisabled();
 			}
 
 			if (changed) {
 				rect->MarkDirty();
 				rect->RefreshMatrix();
-				// Como el RectTransform sincroniza con el Transform real, 
-				// el Octree debe saber que el objeto se movió.
 				Application::GetInstance().GetScene().GetOctree().Rebuild();
 			}
 		}
@@ -489,6 +479,29 @@ namespace Loopie {
 
 				// Slider para el Match (0 = Ancho, 1 = Alto)
 				ImGui::SliderFloat("Match (W/H)", &scaler->MatchWidthOrHeight, 0.0f, 1.0f);
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawImage(Image* image)
+	{
+		ImGui::PushID(image);
+		if (ImGui::CollapsingHeader("Image", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			auto material = image->GetOwner()->GetComponent<MeshRenderer>()->GetMaterial();
+			// Color Picker
+			vec4 color = image->Color;
+			ImVec4 imguiColor(color.x, color.y, color.z, color.w);
+			ImGui::Text("Texture: %s", image->pathSprite.c_str());
+			if (ImGui::ColorEdit4("Color", (float*)&imguiColor))
+			{
+				image->SetColor(vec4(imguiColor.x, imguiColor.y, imguiColor.z, imguiColor.w));
+				vec4 newValue = vec4(color.x, color.y, color.z, color.w);
+
+				UniformValue newVal = UniformValue{UniformType::UniformType_vec4, newValue};
+				newVal.value = newValue;
+				material->SetShaderVariable("u_Color", newVal);
 			}
 		}
 		ImGui::PopID();
@@ -571,5 +584,18 @@ namespace Loopie {
 		else if (id == OnEntityOrFileNotification::OnFileSelect) {
 			m_mode = InspectorMode::ImportMode;
 		}
+	}
+	std::vector<std::string> InspectorInterface::GetAllTexturePaths()
+	{
+		std::vector<std::string> textures;
+
+		for (auto& [uuid, metadata] : AssetRegistry::GetAllAssets())
+		{
+			if (metadata.Type == ResourceType::TEXTURE && !metadata.CachesPath.empty()) {
+				textures.push_back(metadata.CachesPath[0]);
+			}
+		}
+
+		return textures;
 	}
 }

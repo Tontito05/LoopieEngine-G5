@@ -50,6 +50,7 @@ namespace Loopie {
 		struct RenderItem {
 			std::shared_ptr<VertexArray> VAO;
 			unsigned int IndexCount;
+			bool isUIItem = false;
 
 			std::shared_ptr<Material> Material;
 			const Transform* Transform;

@@ -3,6 +3,7 @@
 #include "Loopie/Components/Component.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Render/VertexArray.h"
+#include "Loopie/Resources/Types/Material.h"
 
 namespace Loopie
 {
@@ -22,7 +23,7 @@ namespace Loopie
 
 		Canvas() = default;
 
-		virtual void Init() override {}
+		virtual void Init() override;
 
 		// Getters
 		vec2 GetCanvasSize() const;
@@ -41,5 +42,8 @@ namespace Loopie
 	private:
 		vec2 m_LastScreenSize{ 0, 0 };
 		std::shared_ptr<VertexArray> m_QuadVAO;
+		std::shared_ptr<Material> m_material;
+		std::shared_ptr<Texture> Sprite = nullptr;
+		std::string pathSprite = "assets/icons/canvas.png";
 	};
 }

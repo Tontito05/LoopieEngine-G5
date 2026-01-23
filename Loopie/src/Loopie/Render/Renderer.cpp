@@ -103,12 +103,12 @@ namespace Loopie {
 
 	void Renderer::AddRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
 	{
-		s_RenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), material, transform});
+		s_RenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), false, material, transform});
 	}
 
 	void Renderer::AddRenderUIItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
 	{
-		s_UIRenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), material, transform });
+		s_UIRenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), true, material, transform });
 	}
 
 	void Renderer::FlushRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
@@ -160,7 +160,7 @@ namespace Loopie {
 			item.VAO->Bind();
 			item.Material->Bind();
 			SetRenderUniforms(item.Material, item.Transform);
-			glDrawArrays(GL_LINE_LOOP, 0, 4);
+			glDrawElements(GL_TRIANGLES, item.IndexCount, GL_UNSIGNED_INT, nullptr);
 			item.VAO->Unbind();
 		}
 

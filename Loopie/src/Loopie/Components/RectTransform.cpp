@@ -6,57 +6,48 @@
 
 void Loopie::RectTransform::UpdateMatrix(const vec2& parentSize, float scaleFactor, Canvas* root)
 {
-	// Scale to dimensions desired
-	float currentWidth = Width * scaleFactor;
-	float currentHeight = Height * scaleFactor;
+	float finalX = parentSize.x + (AnchoredPosition.x * scaleFactor);
+	float finalY = parentSize.y + (AnchoredPosition.y * scaleFactor);
 
-	// Calculate area between anchors in pixels
-	float anchorLeft = parentSize.x * AnchorMin.x;
-	float anchorRight = parentSize.x * AnchorMax.x;
-	float anchorBottom = parentSize.y * AnchorMin.y;
-	float anchorTop = parentSize.y * AnchorMax.y;
-
-	// Determin base position
-	vec2 anchorCenter = vec2((anchorLeft + anchorRight) * 0.5f,
-							 (anchorBottom + anchorTop) * 0.5f);
-
-	// Final position at world space
-	vec3 finalPos = vec3(anchorCenter.x + (AnchoredPosition.x * scaleFactor),
-						 anchorCenter.y + (AnchoredPosition.y * scaleFactor),
-						 AnchoredPosition.z);
+	float finalW = Width * scaleFactor;
+	float finalH = Height * scaleFactor;
 
 	if (root && root->PixelPerfect)
 	{
-		finalPos.x = std::round(finalPos.x);
-		finalPos.y = std::round(finalPos.y);
+		finalX = std::round(finalX);
+		finalY = std::round(finalY);
 	}
 
-	// Matrix Calculations (T * R * S)
-	matrix4 translation = translate(matrix4(1.0f), finalPos);
-	matrix4 rotation = toMat4(quaternion(radians(Rotation)));
-	matrix4 scale = glm::scale(matrix4(1.0f), vec3(currentWidth * Scale.x, currentHeight * Scale.y, 1.0f));
-	
-	// Apply pivot offset
-	vec3 pivotOffset = vec3((Pivot.x - 0.5f) * currentWidth, (Pivot.y - 0.5f) * currentHeight, 0.0f);
-	matrix4 pivotTransform = glm::translate(matrix4(1.0f), -pivotOffset);
+	vec3 pivotOffset(
+		-(Pivot.x * finalW),
+		-(Pivot.y * finalH),
+		0.0f
+	);
+	matrix4 pivotTranslation = translate(matrix4(1.0f), pivotOffset);
 
+	// Matrix Calculations (T * R * S)
+	matrix4 rotation = toMat4(GetOwner()->GetTransform()->GetLocalRotation());
+	matrix4 scale = glm::scale(matrix4(1.0f), vec3(finalW, finalH, 1.0f));
+
+	matrix4 visualTRS = rotation * scale;
+	matrix4 translation = translate(matrix4(1.0f), vec3(finalX, finalY, 0.0f));
+	
 	// Final Matrix
-	m_LocalToWorldMatrix = translation * rotation * scale * pivotTransform;
-	m_CalculatedSize = vec2(currentWidth, currentHeight);
+	m_LocalToWorldMatrix = translation * visualTRS * pivotTranslation;
 
 	if (auto transform = GetOwner()->GetTransform())
 	{
-		transform->SetLocalPosition(finalPos);
-		transform->SetLocalRotation(quaternion(radians(Rotation)));
-		transform->SetLocalScale(vec3(currentWidth * Scale.x, currentHeight * Scale.y, 1.0f));
+		transform->SetWorldPosition(vec3(finalX,finalY,transform->GetLocalPosition().z));
+		transform->SetLocalScale(vec3(finalW, finalH, 1.0f));
 	}
 
 	// Recursiveley update children
+	vec2 currentPos = vec2(finalX, finalY);
 	for (auto& child : GetOwner()->GetChildren())
 	{
 		if (!child) continue;
 		if (auto rt = child->GetComponent<RectTransform>()) {
-			rt->UpdateMatrix(m_CalculatedSize, scaleFactor, root);
+			rt->UpdateMatrix(currentPos, scaleFactor, root);
 		}
 	}
 
@@ -74,9 +65,17 @@ void Loopie::RectTransform::RefreshMatrix()
 		scaleFactor = scaler->GetScaleFactor();
 	}
 
-	vec2 pSize = GetParentSize();
+	vec2 pPos = vec2(0.0f, 0.0f);
+	if(auto parent = GetOwner()->GetParent().lock())
+	{
+		if (auto parentRT = parent->GetComponent<RectTransform>())
+		{
+			pPos.x = parentRT->AnchoredPosition.x;
+			pPos.y = parentRT->AnchoredPosition.y;
+		}
+	}
 
-	UpdateMatrix(pSize, scaleFactor, root);
+	UpdateMatrix(pPos, scaleFactor, root);
 }
 
 Loopie::JsonNode Loopie::RectTransform::Serialize(JsonNode& parent) const
@@ -91,31 +90,6 @@ Loopie::JsonNode Loopie::RectTransform::Serialize(JsonNode& parent) const
 
 	node.CreateField("width", Width);
 	node.CreateField("height", Height);
-
-	// Anchors and Pivot
-	JsonNode ancMin = node.CreateObjectField("anchorMin");
-	ancMin.CreateField("x", AnchorMin.x); 
-	ancMin.CreateField("y", AnchorMin.y);
-
-	JsonNode ancMax = node.CreateObjectField("anchorMax");
-	ancMax.CreateField("x", AnchorMax.x); 
-	ancMax.CreateField("y", AnchorMax.y);
-
-	JsonNode piv = node.CreateObjectField("pivot");
-	piv.CreateField("x", Pivot.x); 
-	piv.CreateField("y", Pivot.y);
-
-	// Rotation transform
-	JsonNode rot = node.CreateObjectField("rotation");
-	rot.CreateField("x", Rotation.x); 
-	rot.CreateField("y", Rotation.y); 
-	rot.CreateField("z", Rotation.z);
-
-	// Scale transform
-	JsonNode scale = node.CreateObjectField("scale");
-	scale.CreateField("x", Scale.x); 
-	scale.CreateField("y", Scale.y); 
-	scale.CreateField("z", Scale.z);
 
 	return node;
 }
@@ -134,39 +108,6 @@ void Loopie::RectTransform::Deserialize(const JsonNode& data)
 	}
 	Width = node.GetValue<float>("width", 100.0f).Result;
 	Height = node.GetValue<float>("height", 100.0f).Result;
-	
-	// Anchors and Pivot
-	JsonNode ancMin = node.Child("anchorMin");
-	if (ancMin.IsValid()) {
-		AnchorMin.x = ancMin.GetValue<float>("x", 0.0f).Result;
-		AnchorMin.y = ancMin.GetValue<float>("y", 0.0f).Result;
-	}
-	JsonNode ancMax = node.Child("anchorMax");
-	if (ancMax.IsValid()) {
-		AnchorMax.x = ancMax.GetValue<float>("x", 0.0f).Result;
-		AnchorMax.y = ancMax.GetValue<float>("y", 0.0f).Result;
-	}
-	JsonNode piv = node.Child("pivot");
-	if (piv.IsValid()) {
-		Pivot.x = piv.GetValue<float>("x", 0.5f).Result;
-		Pivot.y = piv.GetValue<float>("y", 0.5f).Result;
-	}
-	
-	// Rotation transform
-	JsonNode rot = node.Child("rotation");
-	if (rot.IsValid()) {
-		Rotation.x = rot.GetValue<float>("x", 0.0f).Result;
-		Rotation.y = rot.GetValue<float>("y", 0.0f).Result;
-		Rotation.z = rot.GetValue<float>("z", 0.0f).Result;
-	}
-	
-	// Scale transform
-	JsonNode scale = node.Child("scale");
-	if (scale.IsValid()) {
-		Scale.x = scale.GetValue<float>("x", 1.0f).Result;
-		Scale.y = scale.GetValue<float>("y", 1.0f).Result;
-		Scale.z = scale.GetValue<float>("z", 1.0f).Result;
-	}
 }
 
 Loopie::Canvas* Loopie::RectTransform::FindRootCanvas()

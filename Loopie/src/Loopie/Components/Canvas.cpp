@@ -2,6 +2,40 @@
 #include "Loopie/Components/RectTransform.h"
 #include "Loopie/Components/CanvasScaler.h"
 #include "Loopie/Core/Application.h"
+#include "Loopie/Resources/ResourceManager.h"
+#include "Loopie/Importers/TextureImporter.h"
+#include "Loopie/Importers/MaterialImporter.h"
+#include "Loopie/Components/MeshRenderer.h"
+#include "Loopie/Core/Log.h"
+
+void Loopie::Canvas::Init()
+{
+	auto meshRenderer = GetOwner()->GetComponent<MeshRenderer>();
+	if (!meshRenderer) return;
+
+	Metadata& uiMatMeta = AssetRegistry::GetOrCreateMetadata("assets/materials/defaultMaterial.mat");
+	MaterialImporter::ImportMaterial("assets/materials/defaultMaterial.mat", uiMatMeta);
+	std::shared_ptr<Material> templateMaterial = ResourceManager::GetMaterial(uiMatMeta);
+
+	m_material = std::make_shared<Material>(*templateMaterial);
+	m_material->SetIfEditable(true);
+
+	if (!pathSprite.empty()) {
+		Metadata& spriteMeta = AssetRegistry::GetOrCreateMetadata(pathSprite);
+		TextureImporter::ImportImage(pathSprite, spriteMeta);
+		Sprite = ResourceManager::GetTexture(spriteMeta);
+
+		if (Sprite) {
+			m_material->SetTexture(Sprite);
+			Log::Info("Image '{0}': Loaded texture '{1}' (ID: {2})",
+				GetOwner()->GetName(),
+				pathSprite,
+				Sprite ? Sprite->GetRendererId() : 0);
+		}
+	}
+
+	meshRenderer->SetMaterial(m_material);
+}
 
 Loopie::vec2 Loopie::Canvas::GetCanvasSize() const
 {

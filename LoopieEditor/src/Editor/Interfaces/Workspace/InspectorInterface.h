@@ -11,6 +11,7 @@ namespace Loopie {
 	class RectTransform;
 	class Canvas;
 	class CanvasScaler;
+	class Image;
 
 
 	class InspectorInterface : public Interface , public IObserver<OnEntityOrFileNotification>{
@@ -39,6 +40,7 @@ namespace Loopie {
 		void DrawRectTransform(RectTransform* rect);
 		void DrawCanvas(Canvas* canvas);
 		void DrawCanvasScaler(CanvasScaler* scaler);
+		void DrawImage(class Image* image);
 
 		void AddComponent(const std::shared_ptr<Entity>& entity);
 		bool RemoveComponent(Component* component);
@@ -48,6 +50,8 @@ namespace Loopie {
 
 		// Inherited via IObserver
 		void OnNotify(const OnEntityOrFileNotification& id) override;
+
+		std::vector<std::string> GetAllTexturePaths();
 
 	private:
 

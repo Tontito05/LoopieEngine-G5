@@ -11,6 +11,7 @@
 #include "Loopie/Importers/MaterialImporter.h"
 #include "Loopie/Importers/TextureImporter.h"
 #include "Loopie/Components/MeshRenderer.h"
+#include "Loopie/Components/Image.h"
 
 
 #include "Editor/Interfaces/Workspace/HierarchyInterface.h"
@@ -275,6 +276,9 @@ namespace Loopie {
 				if (renderer) {
 					if (renderer->GetMaterial())
 						renderer->GetMaterial()->SetTexture(texture);
+				}
+				if (auto img = selectedEntity->GetComponent<Image>()) {
+					img->SetSprite(texturePath);
 				}
 			}
 			else {

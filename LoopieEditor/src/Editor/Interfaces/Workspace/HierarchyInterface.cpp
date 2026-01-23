@@ -6,6 +6,8 @@
 #include "Loopie/Components/RectTransform.h"
 #include "Loopie/Components/Canvas.h"
 #include "Loopie/Components/CanvasScaler.h"
+#include "Loopie/Components/Transform.h"
+#include "Loopie/Components/Image.h"
 
 #include "Loopie/Helpers/LoopieHelpers.h"
 #include "Editor/Interfaces/Workspace/SceneInterface.h"
@@ -170,6 +172,10 @@ namespace Loopie {
 		{
 			if (ImGui::MenuItem("Canvas"))
 				SelectEntity(CreateCanvas(entity));
+			if (ImGui::MenuItem("Image")) {
+				if(s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
+					SelectEntity(CreateImage(s_SelectedEntity.lock()));
+			}
 			ImGui::EndMenu();
 		}
 	}
@@ -242,15 +248,37 @@ namespace Loopie {
 	std::shared_ptr<Entity> HierarchyInterface::CreateCanvas(const std::shared_ptr<Entity>& parent)
 	{
 		std::shared_ptr<Entity> canvas = m_scene->CreateEntity("Canvas", parent);
+		MeshRenderer* renderer = canvas->AddComponent<MeshRenderer>();
+
+		std::string modelPath = "assets/models/primitives/plane.fbx";
+		Metadata& meta = AssetRegistry::GetOrCreateMetadata(modelPath);
+		MeshImporter::ImportModel(modelPath, meta);
+		std::shared_ptr<Mesh> mesh = ResourceManager::GetMesh(meta, 0);
+		if (mesh)
+			renderer->SetMesh(mesh);
+
 		canvas->AddComponent<RectTransform>();
+		canvas->GetComponent<RectTransform>()->AnchoredPosition = canvas->GetTransform()->GetLocalPosition();
 		canvas->AddComponent<Canvas>();
 		canvas->AddComponent<CanvasScaler>();
 
-		std::shared_ptr<VertexArray>& vao = std::shared_ptr<VertexArray>();
-		Helper::CreateRectBorder(vao);
-
-		canvas->GetComponent<Canvas>()->SetVAO(vao);
-
 		return canvas;
+	}
+	std::shared_ptr<Entity> HierarchyInterface::CreateImage(const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> image = m_scene->CreateEntity("Image", parent);
+		MeshRenderer* renderer = image->AddComponent<MeshRenderer>();
+
+		std::string modelPath = "assets/models/primitives/plane.fbx";
+		Metadata& meta = AssetRegistry::GetOrCreateMetadata(modelPath);
+		MeshImporter::ImportModel(modelPath, meta);
+		std::shared_ptr<Mesh> mesh = ResourceManager::GetMesh(meta, 0);
+		if (mesh)
+			renderer->SetMesh(mesh);
+
+		image->AddComponent<RectTransform>();
+		image->AddComponent<Image>();
+
+		return image;
 	}
 }
