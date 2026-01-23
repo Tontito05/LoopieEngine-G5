@@ -13,6 +13,8 @@ namespace Loopie {
 		void StartScene();
 		void EndScene();
 
+		ivec2 GetWindowSize() const { return m_windowSize; }
+
 		bool IsVisible() { return m_visible; }
 
 		Camera* GetCamera();

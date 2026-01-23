@@ -61,6 +61,7 @@ namespace Loopie {
 		// Add more if needed: https://registry.khronos.org/OpenGL-Refpages/gl4/html/glUniform.xhtml
 		void SetUniformInt(const std::string& name, int value);
 		void SetUniformFloat(const std::string& name, float value);
+		void SetUniformBool(const std::string& name, bool value);
 		void SetUniformMat2(const std::string& name, const Loopie::matrix2& matrix);
 		void SetUniformMat3(const std::string& name, const Loopie::matrix3& matrix);
 		void SetUniformMat4(const std::string& name, const Loopie::matrix4& matrix);

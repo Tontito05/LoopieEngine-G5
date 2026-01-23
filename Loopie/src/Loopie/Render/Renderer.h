@@ -62,20 +62,27 @@ namespace Loopie {
 		static void SetClearColor(const vec4& color);
 		static void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
+		static void GetViewport(int& x, int& y, int& width, int& height);
+
 		static void RegisterCamera(Camera& camera);
 		static void UnregisterCamera(Camera& camera);
 		static const std::vector<Camera*>& GetRendererCameras() { return s_RenderCameras; }
 		static bool IsGizmoActive() { return s_UseGizmos; }
 
 		static void BeginScene(const matrix4& viewMatrix, const matrix4& projectionMatrix, bool gizmo = true);
-		static void EndScene();
+		static void EndScene(bool isOverlay = false);
 
 		static void AddRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform);
+		static void AddRenderUIItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* modelMatrix);
+		
 		static void FlushRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform);
 		static void FlushRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const matrix4& modelMatrix);
 
 		static void EnableDepth();
 		static void DisableDepth();
+
+		static void EnableBlend();
+		static void DisableBlend();
 
 		static void EnableStencil();
 		static void DisableStencil();
@@ -87,11 +94,13 @@ namespace Loopie {
 		static void SetRenderUniforms(std::shared_ptr<Material> material, const Transform* transform);
 		static void SetRenderUniforms(std::shared_ptr<Material> material, const matrix4& modelMatrix);
 		static void FlushRenderQueue();
+		static void FlushUIRenderQueue(bool isOverlayHUD);
 
 	public:
 	private:
 
 		static std::vector<RenderItem> s_RenderQueue;
+		static std::vector<RenderItem> s_UIRenderQueue;
 		static std::vector<Camera*> s_RenderCameras;
 		static std::shared_ptr<UniformBuffer> s_MatricesUniformBuffer;
 
