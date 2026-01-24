@@ -1,6 +1,5 @@
 #pragma once
 #include "Loopie/Components/Component.h"
-#include <functional>
 #include "Loopie/Math/MathTypes.h"
 
 namespace Loopie{

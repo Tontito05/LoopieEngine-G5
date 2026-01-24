@@ -19,7 +19,7 @@ float Loopie::CanvasScaler::GetScaleFactor() const
 
 Loopie::JsonNode Loopie::CanvasScaler::Serialize(JsonNode& parent) const
 {
-	JsonNode node = parent.CreateObjectField("canvasScaler");
+	JsonNode node = parent.CreateObjectField("canvasscaler");
 	node.CreateField("scaleMode", (int)Mode);
 	node.CreateField("matchWidthOrHeight", MatchWidthOrHeight);
 
@@ -32,7 +32,7 @@ Loopie::JsonNode Loopie::CanvasScaler::Serialize(JsonNode& parent) const
 
 void Loopie::CanvasScaler::Deserialize(const JsonNode& data)
 {
-	JsonNode node = data.Child("canvasScaler");
+	JsonNode node = data.Child("canvasscaler");
 	if (!node.IsValid()) return;
 
 	Mode = (ScaleMode)node.GetValue<int>("scaleMode", (int)ScaleMode::ScaleWithScreenSize).Result;

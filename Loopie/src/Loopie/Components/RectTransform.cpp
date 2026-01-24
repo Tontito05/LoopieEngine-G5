@@ -80,7 +80,7 @@ void Loopie::RectTransform::RefreshMatrix()
 
 Loopie::JsonNode Loopie::RectTransform::Serialize(JsonNode& parent) const
 {
-	JsonNode node = parent.CreateObjectField("rectTransform");
+	JsonNode node = parent.CreateObjectField("recttransform");
 
 	// Position and size
 	JsonNode pos = node.CreateObjectField("anchoredPosition");
@@ -96,7 +96,7 @@ Loopie::JsonNode Loopie::RectTransform::Serialize(JsonNode& parent) const
 
 void Loopie::RectTransform::Deserialize(const JsonNode& data)
 {
-	JsonNode node = data.Child("rectTransform");
+	JsonNode node = data.Child("recttransform");
 	if (!node.IsValid()) return;
 	
 	// Position and size

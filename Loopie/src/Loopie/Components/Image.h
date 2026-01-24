@@ -24,7 +24,7 @@ namespace Loopie
 
 		void SetSprite(const std::shared_ptr<Texture>& texture) { Sprite = texture; }
 		void SetSprite(const std::string& path);
-		void SetColor(const vec4& color) { Color = color; }
+		void SetColor(const vec4& color);
 
 		std::shared_ptr<Material> GetMaterial() const { return m_material; }
 

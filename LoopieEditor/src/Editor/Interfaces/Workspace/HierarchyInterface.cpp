@@ -8,6 +8,7 @@
 #include "Loopie/Components/CanvasScaler.h"
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/Image.h"
+#include "Loopie/Components/Button.h"
 
 #include "Loopie/Helpers/LoopieHelpers.h"
 #include "Editor/Interfaces/Workspace/SceneInterface.h"
@@ -176,6 +177,10 @@ namespace Loopie {
 				if(s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
 					SelectEntity(CreateImage(s_SelectedEntity.lock()));
 			}
+			if (ImGui::MenuItem("Button")) {
+				if (s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
+					SelectEntity(CreateButton(s_SelectedEntity.lock()));
+			}
 			ImGui::EndMenu();
 		}
 	}
@@ -280,5 +285,23 @@ namespace Loopie {
 		image->AddComponent<Image>();
 
 		return image;
+	}
+	std::shared_ptr<Entity> HierarchyInterface::CreateButton(const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> button = m_scene->CreateEntity("Canvas", parent);
+		MeshRenderer* renderer = button->AddComponent<MeshRenderer>();
+
+		std::string modelPath = "assets/models/primitives/plane.fbx";
+		Metadata& meta = AssetRegistry::GetOrCreateMetadata(modelPath);
+		MeshImporter::ImportModel(modelPath, meta);
+		std::shared_ptr<Mesh> mesh = ResourceManager::GetMesh(meta, 0);
+		if (mesh)
+			renderer->SetMesh(mesh);
+
+		button->AddComponent<RectTransform>();
+		button->AddComponent<Image>();
+		button->AddComponent<Button>();
+
+		return button;
 	}
 }

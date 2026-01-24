@@ -24,7 +24,6 @@ void Loopie::Button::OnUpdate()
 	InputEventManager& inputEvent = Application::GetInstance().GetInputEvent();
 
 	ButtonState wasHovered = m_currentState;
-	m_currentState = IsMouseOver() ? ButtonState::Hovered : ButtonState::Normal;
 
 	if (!interactive) {
 		m_currentState = ButtonState::Disabled;
@@ -33,6 +32,7 @@ void Loopie::Button::OnUpdate()
 		}
 		return;
 	}
+	else m_currentState = IsMouseOver() ? ButtonState::Hovered : ButtonState::Normal;
 
 	if(m_currentState == ButtonState::Hovered && wasHovered != ButtonState::Hovered)
 	{
@@ -51,6 +51,12 @@ void Loopie::Button::OnUpdate()
 		else if (inputEvent.GetMouseButtonStatus(SDL_BUTTON_LEFT) == KeyState::UP) {
 			m_currentState = ButtonState::Normal;
 			OnClick();
+		}
+	}
+
+	if (m_currentState == ButtonState::Normal) {
+		if (image) {
+			image->SetColor(NormalColor);
 		}
 	}
 }

@@ -12,6 +12,7 @@ namespace Loopie {
 	class Canvas;
 	class CanvasScaler;
 	class Image;
+	class Button;
 
 
 	class InspectorInterface : public Interface , public IObserver<OnEntityOrFileNotification>{
@@ -41,6 +42,8 @@ namespace Loopie {
 		void DrawCanvas(Canvas* canvas);
 		void DrawCanvasScaler(CanvasScaler* scaler);
 		void DrawImage(class Image* image);
+		void DrawButton(Button* button);
+
 
 		void AddComponent(const std::shared_ptr<Entity>& entity);
 		bool RemoveComponent(Component* component);

@@ -111,4 +111,5 @@ void Loopie::Canvas::Deserialize(const JsonNode& data)
 {
 	Mode = (RenderMode)data.GetValue<int>("renderMode", 0).Result;
 	PixelPerfect = data.GetValue<bool>("pixelPerfect", true).Result;
+	this->Init();
 }

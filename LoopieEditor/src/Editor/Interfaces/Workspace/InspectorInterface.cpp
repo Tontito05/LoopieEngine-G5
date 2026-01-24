@@ -8,6 +8,7 @@
 #include "Loopie/Components/Canvas.h"
 #include "Loopie/Components/CanvasScaler.h"
 #include "Loopie/Components/Image.h"
+#include "Loopie/Components/Button.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -80,6 +81,9 @@ namespace Loopie {
 			}
 			else if (component->GetTypeID() == Image::GetTypeIDStatic()) {
 				DrawImage(static_cast<Image*>(component));
+			}
+			else if (component->GetTypeID() == Button::GetTypeIDStatic()) {
+				DrawButton(static_cast<Button*>(component));
 			}
 		}
 		AddComponent(entity);
@@ -489,7 +493,6 @@ namespace Loopie {
 		ImGui::PushID(image);
 		if (ImGui::CollapsingHeader("Image", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			auto material = image->GetOwner()->GetComponent<MeshRenderer>()->GetMaterial();
 			// Color Picker
 			vec4 color = image->Color;
 			ImVec4 imguiColor(color.x, color.y, color.z, color.w);
@@ -497,11 +500,51 @@ namespace Loopie {
 			if (ImGui::ColorEdit4("Color", (float*)&imguiColor))
 			{
 				image->SetColor(vec4(imguiColor.x, imguiColor.y, imguiColor.z, imguiColor.w));
-				vec4 newValue = vec4(color.x, color.y, color.z, color.w);
+			}
+		}
+		ImGui::PopID();
+	}
 
-				UniformValue newVal = UniformValue{UniformType::UniformType_vec4, newValue};
-				newVal.value = newValue;
-				material->SetShaderVariable("u_Color", newVal);
+	void InspectorInterface::DrawButton(Button* button)
+	{
+		ImGui::PushID(button);
+		if (ImGui::CollapsingHeader("Button", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::Checkbox("Interactive", &button->interactive))
+			{
+				// ...
+			}
+
+			// Normal Color picker
+			vec4 normalColor = button->NormalColor;
+			ImVec4 imguiNormalColor(normalColor.x, normalColor.y, normalColor.z, normalColor.w);
+			if (ImGui::ColorEdit4("Normal Color", (float*)&imguiNormalColor))
+			{
+				button->NormalColor = vec4(imguiNormalColor.x, imguiNormalColor.y, imguiNormalColor.z, imguiNormalColor.w);
+			}
+
+			// Hovered Color picker
+			vec4 hoveredColor = button->HoveredColor;
+			ImVec4 imguiHoveredColor(hoveredColor.x, hoveredColor.y, hoveredColor.z, hoveredColor.w);
+			if (ImGui::ColorEdit4("Hovered Color", (float*)&imguiHoveredColor))
+			{
+				button->HoveredColor = vec4(imguiHoveredColor.x, imguiHoveredColor.y, imguiHoveredColor.z, imguiHoveredColor.w);
+			}
+
+			// Pressed Color picker
+			vec4 pressedColor = button->PressedColor;
+			ImVec4 imguiPressedColor(pressedColor.x, pressedColor.y, pressedColor.z, pressedColor.w);
+			if (ImGui::ColorEdit4("Pressed Color", (float*)&imguiPressedColor))
+			{
+				button->PressedColor = vec4(imguiPressedColor.x, imguiPressedColor.y, imguiPressedColor.z, imguiPressedColor.w);
+			}
+
+			// Disabled Color picker
+			vec4 disabledColor = button->DisabledColor;
+			ImVec4 imguiDisabledColor(disabledColor.x, disabledColor.y, disabledColor.z, disabledColor.w);
+			if (ImGui::ColorEdit4("Disabled Color", (float*)&imguiDisabledColor))
+			{
+				button->DisabledColor = vec4(imguiDisabledColor.x, imguiDisabledColor.y, imguiDisabledColor.z, imguiDisabledColor.w);
 			}
 		}
 		ImGui::PopID();

@@ -47,6 +47,19 @@ void Loopie::Image::SetSprite(const std::string& path)
 	pathSprite = path;
 }
 
+void Loopie::Image::SetColor(const vec4& color)
+{
+	Color = color;
+	if (m_material)
+	{
+		auto material = GetOwner()->GetComponent<MeshRenderer>()->GetMaterial();
+		UniformValue colorValue;
+		colorValue.type = UniformType::UniformType_vec4;
+		colorValue.value = Color;
+		m_material->SetShaderVariable("u_Color", colorValue);
+	}
+}
+
 Loopie::JsonNode Loopie::Image::Serialize(JsonNode& parent) const
 {
 	JsonNode node = parent.CreateObjectField("image");
@@ -81,4 +94,5 @@ void Loopie::Image::Deserialize(const JsonNode& data)
 	JsonResult<float> a = colorNode.Child("a").GetValue<float>(1.0f);
 	
 	Color = vec4(r.Result, g.Result, b.Result, a.Result);
+	this->Init();
 }
