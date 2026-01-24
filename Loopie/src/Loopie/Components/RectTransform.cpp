@@ -60,10 +60,10 @@ void Loopie::RectTransform::RefreshMatrix()
 	if (!root) return;
 
 	float scaleFactor = 1.0f;
-	if (auto scaler = root->GetOwner()->GetComponent<CanvasScaler>())
-	{
-		scaleFactor = scaler->GetScaleFactor();
-	}
+	//if (auto scaler = root->GetOwner()->GetComponent<CanvasScaler>())
+	//{
+	//	scaleFactor = scaler->GetScaleFactor();
+	//}
 
 	vec2 pPos = vec2(0.0f, 0.0f);
 	if(auto parent = GetOwner()->GetParent().lock())
@@ -123,21 +123,4 @@ Loopie::Canvas* Loopie::RectTransform::FindRootCanvas()
 		current = current->GetParent().lock().get();
 	}
 	return nullptr;
-}
-
-Loopie::vec2 Loopie::RectTransform::GetParentSize()
-{
-	if (auto parent = GetOwner()->GetParent().lock())
-	{
-		if (auto parentRT = parent->GetComponent<RectTransform>())
-		{
-			return parentRT->GetSize();
-		}
-
-		if (auto canvas = parent->GetComponent<Canvas>()) 
-		{
-			return canvas->GetCanvasSize();
-		}
-	}
-	return vec2(0.0f, 0.0f);
 }

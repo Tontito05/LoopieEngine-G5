@@ -6,6 +6,7 @@ namespace Loopie{
 
 	class RectTransform;
 	class Image;
+	class Canvas;
 
 	enum class ButtonState {
 		Normal,
@@ -28,23 +29,26 @@ namespace Loopie{
 		vec4 DisabledColor = vec4(0.3f, 0.3f, 0.3f, 1.0f);
 		
 		virtual void Init() override;
-		void OnUpdate();
+		virtual void Update() override;
+
+		void SetState(ButtonState state);
 				
 		virtual JsonNode Serialize(JsonNode& parent) const override;
 		virtual void Deserialize(const JsonNode& data) override;
 
+		ButtonState GetCurrentState() const { return m_currentState; }
+
 	protected:
-		virtual void OnClick();
-		virtual void OnHoverEnter();
-		virtual void OnHoverExit();
-		virtual void OnPressed();
+		void OnClick();
+		void OnHoverEnter();
+		void OnHoverExit();
+		void OnPressed();
+		void OnDisabled();
 
 	private:
 		RectTransform* m_rectTransform = nullptr;
 		Image* image = nullptr;
 
 		ButtonState m_currentState = ButtonState::Normal;
-		
-		bool IsMouseOver();
 	};
 };

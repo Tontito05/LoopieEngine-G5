@@ -25,8 +25,6 @@ namespace Loopie
 
 		virtual void Init() override {}
 
-		float GetScaleFactor() const;
-
 		virtual JsonNode Serialize(JsonNode& parent) const override;
 		virtual void Deserialize(const JsonNode& data) override;
 	};

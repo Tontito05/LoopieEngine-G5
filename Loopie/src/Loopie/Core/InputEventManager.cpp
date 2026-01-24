@@ -257,4 +257,12 @@ namespace Loopie {
 	{
 		return SDL_GetWindowRelativeMouseMode(Application::GetInstance().GetWindow().GetSDLWindow());
 	}
+
+	void InputEventManager::SetMousePositionInGame(const vec2& pos) {
+		m_mousePosGame = pos;
+	}
+
+	vec2 InputEventManager::GetMousePositionInGame() const {
+		return m_mousePosGame;
+	}
 }

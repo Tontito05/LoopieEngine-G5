@@ -2,6 +2,7 @@
 #include "Loopie/Scene/Entity.h"
 #include "Loopie/Components/RectTransform.h"
 #include "Loopie/Components/Image.h"
+#include "Loopie/Components/Canvas.h"
 #include "Loopie/Core/Application.h"
 #include "Loopie/Core/InputEventManager.h"
 #include "Loopie/Core/Log.h"
@@ -15,50 +16,6 @@ void Loopie::Button::Init()
 	}
 
 	image = GetOwner()->GetComponent<Image>();
-}
-
-void Loopie::Button::OnUpdate()
-{
-	if (!m_rectTransform) return;
-
-	InputEventManager& inputEvent = Application::GetInstance().GetInputEvent();
-
-	ButtonState wasHovered = m_currentState;
-
-	if (!interactive) {
-		m_currentState = ButtonState::Disabled;
-		if (image) {
-			image->SetColor(DisabledColor);
-		}
-		return;
-	}
-	else m_currentState = IsMouseOver() ? ButtonState::Hovered : ButtonState::Normal;
-
-	if(m_currentState == ButtonState::Hovered && wasHovered != ButtonState::Hovered)
-	{
-		OnHoverEnter();
-	}
-	else if(m_currentState != ButtonState::Hovered && wasHovered == ButtonState::Hovered)
-	{
-		OnHoverExit();
-	}
-
-	if (m_currentState == ButtonState::Hovered) {
-		if (inputEvent.GetMouseButtonStatus(SDL_BUTTON_LEFT) == KeyState::DOWN) {
-			m_currentState = ButtonState::Pressed;
-			OnPressed();
-		}
-		else if (inputEvent.GetMouseButtonStatus(SDL_BUTTON_LEFT) == KeyState::UP) {
-			m_currentState = ButtonState::Normal;
-			OnClick();
-		}
-	}
-
-	if (m_currentState == ButtonState::Normal) {
-		if (image) {
-			image->SetColor(NormalColor);
-		}
-	}
 }
 
 Loopie::JsonNode Loopie::Button::Serialize(JsonNode& parent) const
@@ -130,6 +87,15 @@ void Loopie::Button::Deserialize(const JsonNode& data)
 	}
 }
 
+void Loopie::Button::Update()
+{
+	if(!interactive)
+	{
+		SetState(ButtonState::Disabled);
+		return;
+	}
+}
+
 void Loopie::Button::OnClick()
 {
 	Log::Info("Button '{0}' clicked!", GetOwner()->GetName());
@@ -164,18 +130,31 @@ void Loopie::Button::OnPressed()
 	}
 }
 
-bool Loopie::Button::IsMouseOver()
+void Loopie::Button::OnDisabled()
 {
-	auto rt = GetOwner()->GetComponent<RectTransform>();
-	if (!rt) return false;
+	Log::Info("Button '{0}' disabled!", GetOwner()->GetName());
+	if (image) {
+		image->SetColor(DisabledColor);
+	}
+}
 
-	const matrix4& model = rt->GetLocalMatrix();
-	vec2 pos = vec2(model[3][0], model[3][1]);
-	vec2 size = rt->GetSize();
+void Loopie::Button::SetState(ButtonState newState)
+{
+	if (!interactive) {
+		if (m_currentState != ButtonState::Disabled) {
+			m_currentState = ButtonState::Disabled;
+			OnDisabled();
+		}
+		return;
+	}
 
-	InputEventManager& inputEvent = Application::GetInstance().GetInputEvent();
-	vec2 mousePos = inputEvent.GetMousePosition();
+	if (newState == m_currentState) return;
 
-	return (mousePos.x >= pos.x && mousePos.x <= pos.x + size.x &&
-		mousePos.y >= pos.y && mousePos.y <= pos.y + size.y);
+	ButtonState oldState = m_currentState;
+	m_currentState = newState;
+
+	if (oldState != ButtonState::Hovered && newState == ButtonState::Hovered) OnHoverEnter();
+	if (oldState == ButtonState::Hovered && newState != ButtonState::Hovered) OnHoverExit();
+	if (newState == ButtonState::Pressed) OnPressed();
+	if (oldState == ButtonState::Pressed && newState == ButtonState::Hovered) OnClick();
 }

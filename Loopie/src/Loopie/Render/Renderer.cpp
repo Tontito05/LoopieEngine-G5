@@ -97,18 +97,12 @@ namespace Loopie {
 	void Renderer::EndScene(bool isOverlay)
 	{
 		FlushRenderQueue();
-		FlushUIRenderQueue(isOverlay);
 		Gizmo::EndGizmo();
 	}
 
 	void Renderer::AddRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
 	{
 		s_RenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), false, material, transform});
-	}
-
-	void Renderer::AddRenderUIItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
-	{
-		s_UIRenderQueue.emplace_back(RenderItem{ vao, vao->GetIndexBuffer().GetCount(), true, material, transform });
 	}
 
 	void Renderer::FlushRenderItem(std::shared_ptr<VertexArray> vao, std::shared_ptr<Material> material, const Transform* transform)
@@ -137,36 +131,6 @@ namespace Loopie {
 		}
 
 		s_RenderQueue.clear();
-	}
-
-	void Renderer::FlushUIRenderQueue(bool isOverlayHUD)
-	{
-		DisableDepth();
-		EnableBlend();
-
-		//matrix4 uiProjection;
-		//matrix4 uiView;
-
-		//if (isOverlayHUD) {
-		//	int x, y, width, height;
-		//	Renderer::GetViewport(x, y, width, height);
-		//	uiProjection = ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height), -1.0f, 1.0f);
-		//	uiView = matrix4(1.0f);
-		//	s_MatricesUniformBuffer->SetData(&uiProjection[0][0], 0);
-		//	s_MatricesUniformBuffer->SetData(&uiView[0][0], 1);
-		//}
-
-		for (const RenderItem& item : s_UIRenderQueue) {
-			item.VAO->Bind();
-			item.Material->Bind();
-			SetRenderUniforms(item.Material, item.Transform);
-			glDrawElements(GL_TRIANGLES, item.IndexCount, GL_UNSIGNED_INT, nullptr);
-			item.VAO->Unbind();
-		}
-
-		DisableBlend();
-		EnableDepth();
-		s_UIRenderQueue.clear();
 	}
 
 	void Renderer::SetRenderUniforms(std::shared_ptr<Material> material, const Transform* transform)

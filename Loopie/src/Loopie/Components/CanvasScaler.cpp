@@ -1,22 +1,6 @@
 #include "CanvasScaler.h"
 #include "Loopie/Core/Application.h"
 
-float Loopie::CanvasScaler::GetScaleFactor() const
-{
-	if (Mode == ScaleMode::ConstantPixelSize)
-		return 1.0f;
-
-	auto& app = Application::GetInstance();
-	vec2 screenSize = vec2((float)app.GetWindow().GetSize().x, (float)app.GetWindow().GetSize().y);
-
-	float logWidth = std::log2(screenSize.x / ReferenceResolution.x);
-	float logHeight = std::log2(screenSize.y / ReferenceResolution.y);
-
-	float weightedLog = glm::mix(logWidth, logHeight, MatchWidthOrHeight);
-
-	return std::pow(2.0f, weightedLog);
-}
-
 Loopie::JsonNode Loopie::CanvasScaler::Serialize(JsonNode& parent) const
 {
 	JsonNode node = parent.CreateObjectField("canvasscaler");

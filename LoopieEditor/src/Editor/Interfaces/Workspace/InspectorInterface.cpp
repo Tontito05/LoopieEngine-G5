@@ -468,13 +468,11 @@ namespace Loopie {
 			if (ImGui::Combo("Render Mode", &currentMode, modes, IM_ARRAYSIZE(modes)))
 			{
 				canvas->Mode = (RenderMode)currentMode;
-				canvas->NotifyHierarchyDirty();
 			}
 
 			// Toggle de Pixel Perfect
 			if (ImGui::Checkbox("Pixel Perfect", &canvas->PixelPerfect))
 			{
-				canvas->NotifyHierarchyDirty();
 			}
 		}
 		ImGui::PopID();

@@ -284,15 +284,6 @@ namespace Loopie
 			}
 			m_currentScene->GetOctree().DebugDraw(Color::GREEN);
 		}
-
-		if (m_game.IsVisible()) {
-			for (auto entity : entities)
-			{
-				if (auto button = entity->GetComponent<Button>()) {
-					button->OnUpdate();
-				}
-			}
-		}
 		//for (auto& [uuid, entity] : m_currentScene->GetAllEntities()) {
 		//	if (entity->HasComponent<Canvas>() && entity->GetIsActive())
 		//	{

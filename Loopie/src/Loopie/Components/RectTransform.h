@@ -11,6 +11,7 @@ namespace Loopie
 		vec3 AnchoredPosition = vec3(0.0f);
 		float Width = 1.0f;
 		float Height = 1.0f;
+		vec2 Pivot = vec2(0.5f, 0.5f);
 
 		DEFINE_TYPE(RectTransform)
 
@@ -34,10 +35,7 @@ namespace Loopie
 		Canvas* FindRootCanvas();
 
 	private:
-		vec2 GetParentSize();
-
 		matrix4 m_LocalToWorldMatrix{ 1.0f };
-		vec2 Pivot = vec2(0.5f, 0.5f);
 		bool m_Dirty = true;
 	};
 }

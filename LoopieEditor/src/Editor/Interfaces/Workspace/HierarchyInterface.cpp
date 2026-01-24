@@ -288,7 +288,7 @@ namespace Loopie {
 	}
 	std::shared_ptr<Entity> HierarchyInterface::CreateButton(const std::shared_ptr<Entity>& parent)
 	{
-		std::shared_ptr<Entity> button = m_scene->CreateEntity("Canvas", parent);
+		std::shared_ptr<Entity> button = m_scene->CreateEntity("Button", parent);
 		MeshRenderer* renderer = button->AddComponent<MeshRenderer>();
 
 		std::string modelPath = "assets/models/primitives/plane.fbx";
