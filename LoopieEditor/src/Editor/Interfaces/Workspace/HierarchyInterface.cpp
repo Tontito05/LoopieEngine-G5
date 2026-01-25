@@ -129,6 +129,11 @@ namespace Loopie {
 			SelectEntity(newEntity);
 		}	
 
+		if(ImGui::MenuItem("Canvas"))
+		{
+			SelectEntity(CreateCanvasEntity("Canvas", entity));
+		}
+
 		/*if (ImGui::MenuItem("Copy"))
 		{
 
