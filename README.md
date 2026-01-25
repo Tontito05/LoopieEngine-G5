@@ -72,7 +72,7 @@ Together, these features establish a complete UI workflow, from asset import and
 
 ## Video
 
-*CUANDO ESTE EL VIDEO LO PONEMOS AQUI*
+[Final Assignments](https://youtu.be/xWHqU-9jRXc)
 
 ---
 
@@ -80,7 +80,7 @@ Together, these features establish a complete UI workflow, from asset import and
 
 Code Repository: https://github.com/UPC-GameEngines-BCN-2025/LT-Engine
 
-Lastst release: *PONER ENLACE CUANDO LA HAGAMOS*
+Lastst release: https://github.com/Tontito05/LoopieEngine-G5/releases/tag/FinalAssignment
 
 ---
 
