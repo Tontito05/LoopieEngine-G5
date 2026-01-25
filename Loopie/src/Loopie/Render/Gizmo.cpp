@@ -8,6 +8,7 @@
 #include "Loopie/Render/IndexBuffer.h"
 
 #include <glad/glad.h>
+#include "TextRenderer.h"
 
 namespace Loopie {
 	

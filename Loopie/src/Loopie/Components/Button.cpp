@@ -89,10 +89,13 @@ void Loopie::Button::Deserialize(const JsonNode& data)
 
 void Loopie::Button::Update()
 {
-	if(!interactive)
+	if (!interactive)
 	{
 		SetState(ButtonState::Disabled);
 		return;
+	}
+	else if (interactive && m_currentState == ButtonState::Disabled) {
+		SetState(ButtonState::Normal);
 	}
 }
 
@@ -138,6 +141,14 @@ void Loopie::Button::OnDisabled()
 	}
 }
 
+void Loopie::Button::OnNormal()
+{
+	Log::Info("Button '{0}' normal!", GetOwner()->GetName());
+	if (image) {
+		image->SetColor(NormalColor);
+	}
+}
+
 void Loopie::Button::SetState(ButtonState newState)
 {
 	if (!interactive) {
@@ -153,6 +164,7 @@ void Loopie::Button::SetState(ButtonState newState)
 	ButtonState oldState = m_currentState;
 	m_currentState = newState;
 
+	if (oldState == ButtonState::Disabled && newState == ButtonState::Normal) OnNormal();
 	if (oldState != ButtonState::Hovered && newState == ButtonState::Hovered) OnHoverEnter();
 	if (oldState == ButtonState::Hovered && newState != ButtonState::Hovered) OnHoverExit();
 	if (newState == ButtonState::Pressed) OnPressed();

@@ -225,6 +225,9 @@ namespace Loopie
 				//	entity->GetComponent<RectTransform>()->Scale = vec3(entity->GetTransform()->GetLocalScale());
 				//}
 			}
+			if (entity->HasComponent<Button>()) {
+				entity->GetComponent<Button>()->Update();
+			}
 
 			//if (auto img = entity->GetComponent<Image>()) {
 			//	entity->GetComponent<MeshRenderer>()->SetMaterial(img->GetMaterial());
@@ -284,17 +287,6 @@ namespace Loopie
 			}
 			m_currentScene->GetOctree().DebugDraw(Color::GREEN);
 		}
-		//for (auto& [uuid, entity] : m_currentScene->GetAllEntities()) {
-		//	if (entity->HasComponent<Canvas>() && entity->GetIsActive())
-		//	{
-		//		entity->GetComponent<Canvas>()->UpdateUIHierarchy();
-		//		Renderer::AddRenderUIItem(entity->GetComponent<Canvas>()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
-		//	}
-		//	if (entity->HasComponent<Image>() && entity->GetIsActive())
-		//	{
-		//		Renderer::AddRenderUIItem(entity->GetComponent<Image>()->GetVAO(), entity->GetComponent<Image>()->GetMaterial(), entity->GetTransform());
-		//	}
-		//}
 	}
 
 	void EditorModule::RenderUIElement(Entity* entity, const matrix4& projection)

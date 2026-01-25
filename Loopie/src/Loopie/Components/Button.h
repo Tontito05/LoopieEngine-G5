@@ -44,6 +44,7 @@ namespace Loopie{
 		void OnHoverExit();
 		void OnPressed();
 		void OnDisabled();
+		void OnNormal();
 
 	private:
 		RectTransform* m_rectTransform = nullptr;

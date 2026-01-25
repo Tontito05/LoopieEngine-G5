@@ -23,6 +23,7 @@ namespace Loopie {
 			m_visible = true;
 			ImVec2 size = ImGui::GetContentRegionAvail();
 			m_windowSize = { (int)size.x, (int)size.y };
+			Application::GetInstance().GetInputEvent().SetGameSize(vec2(m_windowSize.x, m_windowSize.y));
 			m_entityUnderMouse = MousePick();
 			HandleButtonLogic();
 			ImGui::Image((ImTextureID)m_buffer->GetTextureId(), size, ImVec2(0, 1), ImVec2(1, 0));

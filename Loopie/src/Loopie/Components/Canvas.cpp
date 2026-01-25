@@ -37,6 +37,13 @@ void Loopie::Canvas::Init()
 	}
 
 	meshRenderer->SetMaterial(m_material);
+
+	//if(Mode == RenderMode::ScreenSpaceOverlay)
+	//{
+	//	auto canvasScaler = GetOwner()->AddComponent<CanvasScaler>();
+	//	if (canvasScaler)
+	//		canvasScaler->ApplyScale();
+	//}
 }
 
 void Loopie::Canvas::SetPixelPerfect(bool enable)

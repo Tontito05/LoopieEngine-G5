@@ -60,10 +60,10 @@ void Loopie::RectTransform::RefreshMatrix()
 	if (!root) return;
 
 	float scaleFactor = 1.0f;
-	//if (auto scaler = root->GetOwner()->GetComponent<CanvasScaler>())
-	//{
-	//	scaleFactor = scaler->GetScaleFactor();
-	//}
+	if (auto scaler = root->GetOwner()->GetComponent<CanvasScaler>())
+	{
+		scaleFactor = scaler->m_scaleFactor;
+	}
 
 	vec2 pPos = vec2(0.0f, 0.0f);
 	if(auto parent = GetOwner()->GetParent().lock())

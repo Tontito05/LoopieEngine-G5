@@ -58,8 +58,8 @@ namespace Loopie {
 
 		bool IsMouseCaptured() const;
 
-		void SetMousePositionInGame(const vec2& pos);
-		vec2 GetMousePositionInGame() const;
+		void SetGameSize(const vec2& pos);
+		vec2 GetGameSize() const;
 		
 	private:
 

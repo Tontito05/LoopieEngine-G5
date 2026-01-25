@@ -248,6 +248,22 @@ namespace Loopie {
 		return siblingEntities;
 	}
 
+	Camera* Scene::GetMainCamera() const
+	{
+		for (const auto& [uuid, entity] : m_entities)
+		{
+			if (entity->GetIsActive())
+			{
+				Camera* camera = entity->GetComponent<Camera>();
+				if (camera && camera->IsMainCamera())
+				{
+					return camera;
+				}
+			}
+		}
+		return nullptr;
+	}
+
 	bool Scene::ReadAndLoadSceneFile(std::string filePath, bool safeSceneAsLastLoaded)
 	{
 		m_entities.clear();

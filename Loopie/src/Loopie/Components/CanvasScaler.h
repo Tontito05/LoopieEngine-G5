@@ -19,9 +19,12 @@ namespace Loopie
 		
 		float MatchWidthOrHeight = 0.5f;
 
+		float m_scaleFactor = 1.0f;
+
 		DEFINE_TYPE(CanvasScaler)
 		
 		CanvasScaler() = default;
+		void ApplyScale();
 
 		virtual void Init() override {}
 

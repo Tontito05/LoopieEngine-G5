@@ -11,6 +11,7 @@ namespace Loopie {
 		MATERIAL,
 		SHADER,
 		SCENE,
+		FONT,
 		UNKNOWN
 	};
 
