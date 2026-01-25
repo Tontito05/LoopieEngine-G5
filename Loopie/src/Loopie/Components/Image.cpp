@@ -45,6 +45,20 @@ void Loopie::Image::Init()
 void Loopie::Image::SetSprite(const std::string& path)
 {
 	pathSprite = path;
+
+	if (!pathSprite.empty()) {
+		Metadata& spriteMeta = AssetRegistry::GetOrCreateMetadata(pathSprite);
+		TextureImporter::ImportImage(pathSprite, spriteMeta);
+		Sprite = ResourceManager::GetTexture(spriteMeta);
+
+		if (Sprite) {
+			m_material->SetTexture(Sprite);
+			Log::Info("Image '{0}': Loaded texture '{1}' (ID: {2})",
+				GetOwner()->GetName(),
+				pathSprite,
+				Sprite ? Sprite->GetRendererId() : 0);
+		}
+	}
 }
 
 void Loopie::Image::SetColor(const vec4& color)

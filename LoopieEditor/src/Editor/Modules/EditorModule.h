@@ -32,12 +32,14 @@ namespace Loopie {
 		void OnUpdate() override;
 
 		void OnInterfaceRender()override;
+
+		void CreateCity();
 	private:
 		void RenderWorld(Camera* camera);
 		void RenderUIElement(Entity* entity, const matrix4& projection);
 		/// Test
 		void CreateBakerHouse();
-		void CreateCity();
+
 		//void MousePick(Camera* camera);
 		///
 	private:

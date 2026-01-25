@@ -31,6 +31,8 @@ namespace Loopie {
 		bool m_visible = false;
 		bool m_focused = false;
 
+		bool options_show_test_window = false;
+
 		ivec2 m_windowSize = ivec2(0);
 		ivec2 m_mousePosition = ivec2(0);
 

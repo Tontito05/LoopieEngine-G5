@@ -29,12 +29,30 @@ namespace Loopie {
 			m_entityUnderMouse = MousePick();
 			HandleButtonLogic();
 			HandleTextLogic();
+
 			ImGui::Image((ImTextureID)m_buffer->GetTextureId(), size, ImVec2(0, 1), ImVec2(1, 0));
 		}
 		else
 			m_visible = false;
 
 		ImGui::End();
+
+		if (Application::GetInstance().GetInputEvent().GetKeyStatus(SDL_SCANCODE_F1) == KeyState::DOWN)
+		{
+			options_show_test_window = !options_show_test_window;
+		}
+
+		if (options_show_test_window) {
+			if (ImGui::Begin("Options", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNav))
+			{
+				bool vsync = Application::GetInstance().GetWindow().IsVsyncEnabled();
+				if (ImGui::Checkbox("vsync", &vsync))
+				{
+					Application::GetInstance().GetWindow().SetVsync(vsync);
+				}
+			}
+			ImGui::End();
+		}
 	}
 
 	Camera* GameInterface::GetCamera()
@@ -98,6 +116,8 @@ namespace Loopie {
 				else if (mouseReleased && m_lastPressedEntity == m_entityUnderMouse) {
 					btn->SetState(ButtonState::Hovered);
 					m_lastPressedEntity = nullptr;
+					Application::GetInstance().GetScene().GetMainCamera()->SetProjection(CameraProjection::Perspective);
+					Application::GetInstance().GetScene().GetMainCamera()->GetTransform()->SetEulerAngles(vec3(15.0f, -180.0f, 0.0f));
 				}
 			}
 		}
