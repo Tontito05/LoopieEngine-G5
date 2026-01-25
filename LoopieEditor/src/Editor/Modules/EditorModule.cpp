@@ -17,6 +17,15 @@
 
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/RectTransform.h"
+#include "Loopie/Components/Canvas.h"
+#include "Loopie/Components/CanvasScaler.h"
+#include "Loopie/Components/Image.h"
+#include "Loopie/Components/Button.h"
+#include "Loopie/Components/Text.h"
+
+#include "Loopie/Helpers/LoopieHelpers.h"
+
 #include "Loopie/Resources/Types/Material.h"
 ///
 
@@ -31,22 +40,29 @@ namespace Loopie
 
 		/////SCENE
 		Application::GetInstance().CreateScene(""); /// Maybe default One
-		scene = &Application::GetInstance().GetScene();
+		m_currentScene = &Application::GetInstance().GetScene();
 
 		JsonData data = Json::ReadFromFile(Application::GetInstance().m_activeProject.GetConfigPath());
 		JsonResult<std::string> result = data.Child("last_scene").GetValue<std::string>();
-		if (!result.Found || !scene->ReadAndLoadSceneFile(result.Result))
+		if (!result.Found || !m_currentScene->ReadAndLoadSceneFile(result.Result))
 		{
 			CreateCity();
-			scene->CreateEntity({ 0,1,-10 }, { 1,0,0,0 }, { 1,1,1 }, nullptr, "MainCamera")->AddComponent<Camera>();
+			m_currentScene->CreateEntity({ 0,1,-10 }, { 1,0,0,0 }, { 1,1,1 }, nullptr, "MainCamera")->AddComponent<Camera>();
 		}
 		
 
 		Metadata& metadata = AssetRegistry::GetOrCreateMetadata("assets/materials/outlineMaterial.mat");
-		selectedObjectMaterial = ResourceManager::GetMaterial(metadata);
-		selectedObjectMaterial->SetIfEditable(false);
-		selectedObjectShader = new Shader("assets/shaders/SelectionOutline.shader");
-		selectedObjectMaterial->SetShader(*selectedObjectShader);
+		m_selectedObjectMaterial = ResourceManager::GetMaterial(metadata);
+		m_selectedObjectMaterial->SetIfEditable(false);
+
+		Metadata& metadata_ = AssetRegistry::GetOrCreateMetadata("assets/materials/UIMaterial.mat");
+		m_canvasMaterial = ResourceManager::GetMaterial(metadata_);
+		m_canvasMaterial->SetIfEditable(false);
+
+		m_selectedObjectShader = new Shader("assets/shaders/SelectionOutline.shader");
+		m_canvasShader = new Shader("assets/shaders/UIShader.shader");
+		m_selectedObjectMaterial->SetShader(*m_selectedObjectShader);
+		m_canvasMaterial->SetShader(*m_canvasShader);
 
 		////
 
@@ -59,7 +75,7 @@ namespace Loopie
 		m_scene.Init();
 		m_mainMenu.Init();
 
-		m_hierarchy.SetScene(scene);
+		m_hierarchy.SetScene(m_currentScene);
 
 		Application::GetInstance().m_notifier.AddObserver(this);
 
@@ -120,7 +136,7 @@ namespace Loopie
 			m_scene.StartScene();
 			Renderer::BeginScene(m_scene.GetCamera()->GetViewMatrix(), m_scene.GetCamera()->GetProjectionMatrix(), true);
 			RenderWorld(m_scene.GetCamera());
-			Renderer::EndScene();
+			Renderer::EndScene(false);
 			m_scene.EndScene();
 		}		
 
@@ -130,7 +146,7 @@ namespace Loopie
 			if (m_game.GetCamera() && m_game.GetCamera()->GetIsActive()) {
 				Renderer::BeginScene(m_game.GetCamera()->GetViewMatrix(), m_game.GetCamera()->GetProjectionMatrix(), false);
 				RenderWorld(m_game.GetCamera());
-				Renderer::EndScene();
+				Renderer::EndScene(true);
 			}
 			m_game.EndScene();
 		}
@@ -186,7 +202,7 @@ namespace Loopie
 
 		// POST
 		std::unordered_set<std::shared_ptr<Entity>> entities;
-		scene->GetOctree().CollectVisibleEntitiesFrustum(camera->GetFrustum(), entities);
+		m_currentScene->GetOctree().CollectVisibleEntitiesFrustum(camera->GetFrustum(), entities);
 
 		std::vector<MeshRenderer*> renderers;
 		renderers.reserve(1);
@@ -196,6 +212,27 @@ namespace Loopie
 		{
 			if (!entity->GetIsActive())
 				continue;
+
+			if (entity->HasComponent<Canvas>()) {
+				if (entity->GetComponent<Canvas>()->Mode == RenderMode::ScreenSpaceOverlay) {
+					float x = entity->GetComponent<RectTransform>()->AnchoredPosition.x;
+					float y = entity->GetComponent<RectTransform>()->AnchoredPosition.y;
+					float z = entity->GetComponent<RectTransform>()->AnchoredPosition.z;
+					entity->GetTransform()->SetLocalPosition(vec3(x, y, z));
+				}
+				//else {
+				//	entity->GetComponent<RectTransform>()->AnchoredPosition = vec3(entity->GetTransform()->GetLocalPosition());
+				//	entity->GetComponent<RectTransform>()->Rotation = vec3(entity->GetTransform()->GetLocalEulerAngles());
+				//	entity->GetComponent<RectTransform>()->Scale = vec3(entity->GetTransform()->GetLocalScale());
+				//}
+			}
+			if (entity->HasComponent<Button>()) {
+				entity->GetComponent<Button>()->Update();
+			}
+
+			//if (auto img = entity->GetComponent<Image>()) {
+			//	entity->GetComponent<MeshRenderer>()->SetMaterial(img->GetMaterial());
+			//}
 
 			const std::vector<Component*>& components = entity->GetComponents();
 			renderers.clear();
@@ -233,7 +270,7 @@ namespace Loopie
 					Renderer::SetStencilFunc(Renderer::StencilFunc::NOTEQUAL, 1, 0xFF);
 					Renderer::SetStencilMask(0x00);
 
-					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), selectedObjectMaterial, entity->GetTransform());
+					Renderer::FlushRenderItem(renderer->GetMesh()->GetVAO(), m_selectedObjectMaterial, entity->GetTransform());
 
 					Renderer::SetStencilMask(0xFF);
 					Renderer::EnableDepth();
@@ -241,6 +278,15 @@ namespace Loopie
 				}
 			}
 		}
+
+		for (auto entity : entities)
+		{
+			if (auto text = entity->GetComponent<Text>())
+			{
+				text->Render();
+			}
+		}
+
 		Renderer::DisableStencil();
 		if (Renderer::IsGizmoActive()) {
 			if (selectedEntity)
@@ -249,8 +295,26 @@ namespace Loopie
 				if(cam)
 					cam->RenderGizmo();
 			}
-			scene->GetOctree().DebugDraw(Color::GREEN);
+			m_currentScene->GetOctree().DebugDraw(Color::GREEN);
 		}
+	}
+
+	void EditorModule::RenderUIElement(Entity* entity, const matrix4& projection)
+	{
+		//auto rt = entity->GetComponent<RectTransform>();
+
+		//if (rt) {
+		//	m_canvasShader->Bind();
+		//	m_canvasShader->SetUniformMat4("u_UIProjection", projection);
+		//	m_canvasShader->SetUniformMat4("u_Model", rt->GetOwner()->GetTransform()->GetLocalToWorldMatrix());
+
+		//	m_canvasShader->SetUniformVec4("u_Color", vec4(1,1,1,0.5f));
+		//	m_canvasShader->SetUniformBool("u_HasTexture", false);
+
+		//	/*rt->GetOwner()->GetComponent<Canvas>()->GetVAO()->Bind();
+		//	glDrawElements(GL_TRIANGLES, rt->GetOwner()->GetComponent<Canvas>()->GetVAO()->GetIndexBuffer().GetCount(), GL_UNSIGNED_INT, 0);
+		//	rt->GetOwner()->GetComponent<Canvas>()->GetVAO()->Unbind();*/
+		//}
 	}
 
 	void EditorModule::CreateBakerHouse()

@@ -23,6 +23,7 @@ namespace Loopie {
         static const std::string GetSourcePath(const UUID& uuid);
 
         static bool UpdateMetadata(const Metadata& metadata, const std::filesystem::path& assetPath);
+		static std::unordered_map<UUID, Metadata>& GetAllAssets() { return s_Assets; }
 
         static void Clear();
 

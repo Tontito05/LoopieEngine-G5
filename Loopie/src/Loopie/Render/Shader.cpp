@@ -78,6 +78,18 @@ namespace Loopie {
 		glUniform1f(location, value);
 	}
 
+	void Shader::SetUniformBool(const std::string& name, bool value)
+	{
+		if (!CheckIfShaderIsBoundAndWarn()) return;
+		GLint location = GetUniformLocation(name);
+		if (location == -1)
+		{
+			Log::Warn("Uniform '{0}' not found in shader.", name);
+			return;
+		}
+		glUniform1i(location, static_cast<int>(value));
+	}
+
 	void Shader::SetUniformMat2(const std::string& name, const Loopie::matrix2& matrix)
 	{
 		if (!CheckIfShaderIsBoundAndWarn()) return;

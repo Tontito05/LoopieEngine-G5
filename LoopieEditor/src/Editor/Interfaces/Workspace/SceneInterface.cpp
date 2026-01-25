@@ -11,6 +11,7 @@
 #include "Loopie/Importers/MaterialImporter.h"
 #include "Loopie/Importers/TextureImporter.h"
 #include "Loopie/Components/MeshRenderer.h"
+#include "Loopie/Components/Image.h"
 
 
 #include "Editor/Interfaces/Workspace/HierarchyInterface.h"
@@ -108,6 +109,7 @@ namespace Loopie {
 				ImGuizmo::SetDrawlist();
 				if (ImGuizmo::Manipulate(&m_camera->GetCamera()->GetViewMatrix()[0][0], &m_camera->GetCamera()->GetProjectionMatrix()[0][0], (ImGuizmo::OPERATION)m_gizmoOperation, (ImGuizmo::MODE)m_gizmoMode, &worldMatrix[0][0])) {
 					transform->SetWorldMatrix(worldMatrix);
+					Application::GetInstance().GetScene().GetOctree().Rebuild();				
 				}
 				Renderer::EnableDepth();
 			}
@@ -274,6 +276,9 @@ namespace Loopie {
 				if (renderer) {
 					if (renderer->GetMaterial())
 						renderer->GetMaterial()->SetTexture(texture);
+				}
+				if (auto img = selectedEntity->GetComponent<Image>()) {
+					img->SetSprite(texturePath);
 				}
 			}
 			else {

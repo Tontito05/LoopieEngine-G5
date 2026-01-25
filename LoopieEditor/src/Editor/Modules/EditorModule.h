@@ -32,11 +32,14 @@ namespace Loopie {
 		void OnUpdate() override;
 
 		void OnInterfaceRender()override;
+
+		void CreateCity();
 	private:
 		void RenderWorld(Camera* camera);
+		void RenderUIElement(Entity* entity, const matrix4& projection);
 		/// Test
 		void CreateBakerHouse();
-		void CreateCity();
+
 		//void MousePick(Camera* camera);
 		///
 	private:
@@ -49,8 +52,10 @@ namespace Loopie {
 		AssetsExplorerInterface m_assetsExplorer;
 		TopBarInterface m_topBar;
 
-		Scene* scene = nullptr;
-		std::shared_ptr<Material> selectedObjectMaterial;
-		Shader* selectedObjectShader;
+		Scene* m_currentScene = nullptr;
+		std::shared_ptr<Material> m_selectedObjectMaterial;
+		std::shared_ptr<Material> m_canvasMaterial;
+		Shader* m_selectedObjectShader;
+		Shader* m_canvasShader;
 	};
 }

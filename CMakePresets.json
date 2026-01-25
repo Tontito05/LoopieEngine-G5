@@ -5,25 +5,21 @@
             "name": "Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
-          "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
-            "VCPKG_INSTALLED_DIR": "${sourceDir}/vendor/vcpkg_cache/${presetName}",
-            "CMAKE_C_COMPILER": "cl.exe",
-            "CMAKE_CXX_COMPILER": "cl.exe"
-          }
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_INSTALLED_DIR": "${sourceDir}/vendor/vcpkg_cache/${presetName}"
+            }
         },
         {
             "name": "Release",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
-          "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Release",
-            "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
-            "VCPKG_INSTALLED_DIR": "${sourceDir}/vendor/vcpkg_cache/${presetName}",
-            "CMAKE_C_COMPILER": "cl.exe",
-            "CMAKE_CXX_COMPILER": "cl.exe"
-          }
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_INSTALLED_DIR": "${sourceDir}/vendor/vcpkg_cache/${presetName}"
+            }
         }
     ]
 }

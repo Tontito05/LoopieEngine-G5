@@ -58,6 +58,8 @@ namespace Loopie {
 
 		bool IsMouseCaptured() const;
 
+		void SetGameSize(const vec2& pos);
+		vec2 GetGameSize() const;
 		
 	private:
 
@@ -103,5 +105,7 @@ namespace Loopie {
 		std::vector<const char*> m_droppedFiles;
 
 		SDL_Gamepad* gamepad = nullptr;
+
+		vec2 m_mousePosGame = { -1.0f, -1.0f };
 	};
 }

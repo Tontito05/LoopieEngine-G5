@@ -135,7 +135,21 @@ namespace Loopie
 		const vec3 up = transform->Up();
 
 		m_viewMatrix = glm::lookAt(position, position + forward, up);
-		m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_viewport.z / m_viewport.w, m_nearPlane, m_farPlane);
+
+		const float aspect = m_viewport.z / m_viewport.w;
+
+		if (m_projectionType == CameraProjection::Perspective)
+		{
+			m_projectionMatrix = glm::perspective(glm::radians(m_fov), aspect, m_nearPlane, m_farPlane);
+		}
+		else
+		{
+			const float halfHeight = m_orthoSize;
+			const float halfWidth = halfHeight * aspect;
+
+			m_projectionMatrix = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, m_nearPlane, m_farPlane);
+		}
+
 		m_viewProjectionMatrix = m_projectionMatrix * m_viewMatrix;
 
 		m_frustum.FromMatrix(m_viewProjectionMatrix);
@@ -177,6 +191,8 @@ namespace Loopie
 		cameraObj.CreateField<float>("fov", m_fov);
 		cameraObj.CreateField<float>("near_plane", m_nearPlane);
 		cameraObj.CreateField<float>("far_plane", m_farPlane);
+		cameraObj.CreateField<int>("projection", (int)m_projectionType);
+		cameraObj.CreateField<float>("ortho_size", m_orthoSize);
 
 		return cameraObj;
 	}
@@ -187,10 +203,27 @@ namespace Loopie
 		m_nearPlane = data.GetValue<float>("near_plane", 0.1f).Result;
 		m_farPlane = data.GetValue<float>("far_plane", 100.0f).Result;
 		m_isMainCamera = data.GetValue<bool>("is_main_camera", false).Result;
-			
+		m_projectionType = (CameraProjection)data.GetValue<int>("projection", (int)CameraProjection::Perspective).Result;
+		m_orthoSize = data.GetValue<float>("ortho_size", 10.0f).Result;
+
 		if (m_isMainCamera)
 		{
 			SetAsMainCamera();
 		}
+	}
+
+	void Camera::SetProjection(CameraProjection type)
+	{
+		if (m_projectionType != type)
+		{
+			m_projectionType = type;
+			SetDirty();
+		}
+	}
+
+	void Camera::SetOrthoSize(float size)
+	{
+		m_orthoSize = glm::max(0.0001f, size);
+		SetDirty();
 	}
 }

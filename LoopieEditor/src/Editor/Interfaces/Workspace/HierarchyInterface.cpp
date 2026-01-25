@@ -3,7 +3,15 @@
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Resources/ResourceManager.h"
 #include "Loopie/Importers/MeshImporter.h"
+#include "Loopie/Components/RectTransform.h"
+#include "Loopie/Components/Canvas.h"
+#include "Loopie/Components/CanvasScaler.h"
+#include "Loopie/Components/Transform.h"
+#include "Loopie/Components/Image.h"
+#include "Loopie/Components/Button.h"
+#include "Loopie/Components/Text.h"
 
+#include "Loopie/Helpers/LoopieHelpers.h"
 #include "Editor/Interfaces/Workspace/SceneInterface.h"
 #include <imgui.h>
 
@@ -121,11 +129,6 @@ namespace Loopie {
 			SelectEntity(newEntity);
 		}	
 
-		if(ImGui::MenuItem("Canvas"))
-		{
-			SelectEntity(CreateCanvasEntity("Canvas", entity));
-		}
-
 		/*if (ImGui::MenuItem("Copy"))
 		{
 
@@ -164,6 +167,25 @@ namespace Loopie {
 			if (ImGui::MenuItem("Plane"))
 				SelectEntity(CreatePrimitiveModel("assets/models/primitives/plane.fbx", "Plane", entity));
 
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("UI"))
+		{
+			if (ImGui::MenuItem("Canvas"))
+				SelectEntity(CreateCanvas(entity));
+			if (ImGui::MenuItem("Image")) {
+				if(s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
+					SelectEntity(CreateImage(s_SelectedEntity.lock()));
+			}
+			if (ImGui::MenuItem("Button")) {
+				if (s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
+					SelectEntity(CreateButton(s_SelectedEntity.lock()));
+			}
+			if (ImGui::MenuItem("Text")) {
+				if (s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
+					SelectEntity(CreateText(s_SelectedEntity.lock()));
+			}
 			ImGui::EndMenu();
 		}
 	}
@@ -233,20 +255,67 @@ namespace Loopie {
 
 		return newEntity;
 	}
-
-
-
-	std::shared_ptr<Entity> HierarchyInterface::CreateCanvasEntity(const std::string& name, const std::shared_ptr<Entity>& parent)
+	std::shared_ptr<Entity> HierarchyInterface::CreateCanvas(const std::shared_ptr<Entity>& parent)
 	{
-		std::shared_ptr<Entity> newCanvas = m_scene->CreateEntity(name, parent);
+		std::shared_ptr<Entity> canvas = m_scene->CreateEntity("Canvas", parent);
+		MeshRenderer* renderer = canvas->AddComponent<MeshRenderer>();
 
-		//Add all the components of the Canvas
-		//Rectangle Transform
-		//Canvas Renderer
-		//Canvas Scaler
-		//Graphic Raycaster
+		std::string modelPath = "assets/models/primitives/plane.fbx";
+		Metadata& meta = AssetRegistry::GetOrCreateMetadata(modelPath);
+		MeshImporter::ImportModel(modelPath, meta);
+		std::shared_ptr<Mesh> mesh = ResourceManager::GetMesh(meta, 0);
+		if (mesh)
+			renderer->SetMesh(mesh);
 
-		return newCanvas;
+		canvas->AddComponent<RectTransform>();
+		canvas->GetComponent<RectTransform>()->AnchoredPosition = canvas->GetTransform()->GetLocalPosition();
+		canvas->AddComponent<Canvas>();
+		canvas->AddComponent<CanvasScaler>();
+
+		return canvas;
 	}
+	std::shared_ptr<Entity> HierarchyInterface::CreateImage(const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> image = m_scene->CreateEntity("Image", parent);
+		MeshRenderer* renderer = image->AddComponent<MeshRenderer>();
 
+		std::string modelPath = "assets/models/primitives/plane.fbx";
+		Metadata& meta = AssetRegistry::GetOrCreateMetadata(modelPath);
+		MeshImporter::ImportModel(modelPath, meta);
+		std::shared_ptr<Mesh> mesh = ResourceManager::GetMesh(meta, 0);
+		if (mesh)
+			renderer->SetMesh(mesh);
+
+		image->AddComponent<RectTransform>();
+		image->AddComponent<Image>();
+
+		return image;
+	}
+	std::shared_ptr<Entity> HierarchyInterface::CreateButton(const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> button = m_scene->CreateEntity("Button", parent);
+		MeshRenderer* renderer = button->AddComponent<MeshRenderer>();
+
+		std::string modelPath = "assets/models/primitives/plane.fbx";
+		Metadata& meta = AssetRegistry::GetOrCreateMetadata(modelPath);
+		MeshImporter::ImportModel(modelPath, meta);
+		std::shared_ptr<Mesh> mesh = ResourceManager::GetMesh(meta, 0);
+		if (mesh)
+			renderer->SetMesh(mesh);
+
+		button->AddComponent<RectTransform>();
+		button->AddComponent<Image>();
+		button->AddComponent<Button>();
+
+		return button;
+	}
+	std::shared_ptr<Entity> HierarchyInterface::CreateText(const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> textEntity = m_scene->CreateEntity("Text", parent);
+
+		textEntity->AddComponent<RectTransform>();
+		Text* textComp = textEntity->AddComponent<Text>();
+
+		return textEntity;
+	}
 }

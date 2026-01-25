@@ -2,6 +2,7 @@
 #include "Loopie/Components/Component.h"
 #include "Loopie/Scene/Entity.h"
 #include "Loopie/Math/MathUtils.h"
+#include "Loopie/Components/RectTransform.h"
 #include <memory>
 namespace Loopie
 {

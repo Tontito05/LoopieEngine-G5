@@ -118,6 +118,15 @@ namespace Loopie {
 		ASSERT(!SDL_SetWindowSize(m_window, width, height), "Window couldn't change to new size!");
 	}
 
+	void Window::ActivateVSync()
+	{
+		SetVsync(true,true);
+	}
+
+	void Window::DeactivateVSync()
+	{
+		SetVsync(false,true);
+	}
 
 	// https://wiki.libsdl.org/SDL3/SDL_SetWindowFullscreenMode
 	// PSTODO: Check how to best store DisplayMode information

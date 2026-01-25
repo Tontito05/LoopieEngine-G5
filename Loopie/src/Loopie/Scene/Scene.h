@@ -4,6 +4,7 @@
 #include "Loopie/Scene/Entity.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Math/Octree.h"
+#include "Loopie/Components/Camera.h"
 
 #include <string>
 #include <unordered_map>
@@ -47,6 +48,8 @@ namespace Loopie {
 		std::vector<std::shared_ptr<Entity>> GetAllEntitiesHierarchical(std::shared_ptr<Entity> parentEntity = nullptr) const;
 		std::vector<std::shared_ptr<Entity>> GetAllSiblings(std::shared_ptr<Entity> parentEntity = nullptr) const;
 		bool ReadAndLoadSceneFile(std::string filePath, bool safeSceneAsLastLoaded = true);
+
+		Camera* GetMainCamera() const;
 
 	public:
 

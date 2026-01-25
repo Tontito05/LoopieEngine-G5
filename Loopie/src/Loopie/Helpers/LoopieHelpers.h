@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "Loopie/Render/VertexArray.h"
+
 namespace Loopie {
     namespace Helper {
 
@@ -35,6 +37,34 @@ namespace Loopie {
 
                 counter++;
             }
+        }
+
+        static void CreateRectBorder(std::shared_ptr<VertexArray>& m_vao)
+        {
+            float canvasVertices[] = {
+                -0.5f, -0.5f,  0.0f,  0.0f, 0.0f,
+                 0.5f, -0.5f,  0.0f,  1.0f, 0.0f,
+                 0.5f,  0.5f,  0.0f,  1.0f, 1.0f,
+                -0.5f,  0.5f,  0.0f,  0.0f, 1.0f
+            };
+
+            unsigned int canvasIndices[] = {
+                0, 1, 2,
+                2, 3, 0
+            };
+
+            m_vao = std::make_shared<VertexArray>();
+
+            auto vbo = new VertexBuffer(canvasVertices, sizeof(canvasVertices));
+            
+            BufferLayout layout;
+            layout.AddLayoutElement(0, Loopie::GLVariableType::FLOAT, 3, "a_Position");
+            layout.AddLayoutElement(1, Loopie::GLVariableType::FLOAT, 2, "a_TexCoord");
+
+			vbo->SetLayout(layout);
+            auto ebo = new IndexBuffer(canvasIndices, 6);
+
+            m_vao->AddBuffer(vbo, ebo);
         }
     }
 }

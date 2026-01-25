@@ -1,8 +1,15 @@
 #include "InspectorInterface.h"
 #include "Editor/Interfaces/Workspace/HierarchyInterface.h"
+#include "Editor/Interfaces/Workspace/SceneInterface.h"
 #include "Editor/Interfaces/Workspace/AssetsExplorerInterface.h"
 
 #include "Loopie/Components/Transform.h"
+#include "Loopie/Components/RectTransform.h"
+#include "Loopie/Components/Canvas.h"
+#include "Loopie/Components/CanvasScaler.h"
+#include "Loopie/Components/Image.h"
+#include "Loopie/Components/Button.h"
+#include "Loopie/Components/Text.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -55,14 +62,32 @@ namespace Loopie {
 
 		std::vector<Component*> components = entity->GetComponents();
 		for (auto* component : components) {
-			if (component->GetTypeID() == Transform::GetTypeIDStatic()) {
+			if (component->GetTypeID() == Transform::GetTypeIDStatic() && !component->GetOwner()->HasComponent<RectTransform>()) {
 				DrawTransform(static_cast<Transform*>(component));
 			}
 			else if (component->GetTypeID() == Camera::GetTypeIDStatic()) {
 				DrawCamera(static_cast<Camera*>(component));
 			}
-			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic()) {
+			else if (component->GetTypeID() == MeshRenderer::GetTypeIDStatic() && !component->GetOwner()->HasComponent<RectTransform>()) {
 				DrawMeshRenderer(static_cast<MeshRenderer*>(component));
+			}
+			else if (component->GetTypeID() == RectTransform::GetTypeIDStatic()) {
+				DrawRectTransform(static_cast<RectTransform*>(component));
+			}
+			else if (component->GetTypeID() == Canvas::GetTypeIDStatic()) {
+				DrawCanvas(static_cast<Canvas*>(component));
+			}
+			else if (component->GetTypeID() == CanvasScaler::GetTypeIDStatic()) {
+				DrawCanvasScaler(static_cast<CanvasScaler*>(component));
+			}
+			else if (component->GetTypeID() == Image::GetTypeIDStatic()) {
+				DrawImage(static_cast<Image*>(component));
+			}
+			else if (component->GetTypeID() == Button::GetTypeIDStatic()) {
+				DrawButton(static_cast<Button*>(component));
+			}
+			else if (component->GetTypeID() == Text::GetTypeIDStatic()) {
+				DrawText(static_cast<Text*>(component));
 			}
 		}
 		AddComponent(entity);
@@ -107,33 +132,69 @@ namespace Loopie {
 
 	void InspectorInterface::DrawTransform(Transform* transform)
 	{
-		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::PushID(transform);
+
+		bool open = ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen);
+		bool modified = false;
+		if (open) {
 			vec3 position = transform->GetLocalPosition();
 			vec3 rotation = transform->GetLocalEulerAngles();
 			vec3 scale = transform->GetLocalScale();
 
 			if (ImGui::DragFloat3("Position", &position.x, 0.1f)) {
+				modified = true;
 				transform->SetLocalPosition(position);
 			}
 			if (ImGui::DragFloat3("Rotation", &rotation.x, 0.5f)) {
+				modified = true;
 				transform->SetLocalEulerAngles(rotation);
 			}
 			if (ImGui::DragFloat3("Scale", &scale.x, 0.1f)) {
+				modified = true;
 				transform->SetLocalScale(scale);
 			}
 		}
+		ImGui::PopID();
+
+		if(modified)
+			Application::GetInstance().GetScene().GetOctree().Rebuild();
 	}
 
 	void InspectorInterface::DrawCamera(Camera* camera)
 	{
-		if (ImGui::CollapsingHeader("Camera")) {
+		ImGui::PushID(camera);
+
+		bool open = ImGui::CollapsingHeader("Camera");
+
+		if (RemoveComponent(camera)) {
+			ImGui::PopID();
+			return;
+		}
+
+		if (open) {
 			float fov = camera->GetFov();
 			float nearPlane = camera->GetNearPlane();
 			float farPlane = camera->GetFarPlane();
 			bool isMainCamera = Camera::GetMainCamera() == camera;
+			CameraProjection projection = camera->GetProjection();
+			int projIndex = (int)projection;
+			const char* projectionLabels[] = { "Perspective", "Orthographic" };
 
-			if (ImGui::DragFloat("Fov", &fov, 1.0f, 1.0f, 179.0f))
-				camera->SetFov(fov);
+			if (ImGui::Combo("Projection", &projIndex, projectionLabels, IM_ARRAYSIZE(projectionLabels))) {
+				camera->SetProjection((CameraProjection)projIndex);
+			}
+
+			if (camera->GetProjection() == CameraProjection::Perspective)
+			{
+				if (ImGui::DragFloat("Fov", &fov, 1.0f, 1.0f, 179.0f))
+					camera->SetFov(fov);
+			}
+			else
+			{
+				float orthoSize = camera->GetOrthoSize();
+				if (ImGui::DragFloat("Ortho Size", &orthoSize, 0.1f, 0.1f, 100000.0f))
+					camera->SetOrthoSize(orthoSize);
+			}
 
 			if (ImGui::DragFloat("Near Plane", &nearPlane, 0.01f, 0.01f, farPlane - 0.01f))
 				camera->SetNearPlane(nearPlane);
@@ -141,20 +202,33 @@ namespace Loopie {
 			if (ImGui::DragFloat("Far Plane", &farPlane, 1.0f, nearPlane + 0.1f, 10000.0f))
 				camera->SetFarPlane(farPlane);
 
+			ImGui::Separator();
 			if (ImGui::Checkbox("Main Camera", &isMainCamera)) {
 				if(isMainCamera)
 					camera->SetAsMainCamera();
 			}
 		}
+		ImGui::PopID();
 	}
 
 	void InspectorInterface::DrawMeshRenderer(MeshRenderer* meshRenderer)
 	{
-		if (ImGui::CollapsingHeader("Mesh Renderer")) {
+		ImGui::PushID(meshRenderer);
+
+		bool open = ImGui::CollapsingHeader("Mesh Renderer");
+
+		if (RemoveComponent(meshRenderer)) {
+			ImGui::PopID();
+			return;
+		}
+
+		if (open) {
 			auto mesh = meshRenderer->GetMesh();
 			ImGui::Text("Mesh: %s", mesh ? "Assigned" : "None");
-			if (!mesh)
+			if (!mesh) {
+				ImGui::PopID();
 				return;
+			}
 			ImGui::Text("Mesh Resource Count: %u", mesh->GetReferenceCount());
 			ImGui::Text("Mesh Vertices: %d", mesh->GetData().VerticesAmount);
 
@@ -175,13 +249,19 @@ namespace Loopie {
 			//ImGui::Text("Shader: %s", meshRenderer->GetShader().GetName().c_str()); ????
 
 
+
+
 			/// Draw Material Props
+
 			ImGui::Separator();
 			ImGui::Separator();
-			ImGui::Text("Material");
 			std::shared_ptr<Material> material = meshRenderer->GetMaterial();
+			bool isEditable = material->IsEditable();
+			std::string materialName = "Material"; ///GetNameLater
+			if(!isEditable)
+				materialName += " (Read-Only -> EngineDefault)";
+			ImGui::Text(materialName.c_str());
 			ImGui::Text("Material Resource Count: %u", material->GetReferenceCount());
-			bool editable = material->IsEditable();
 			const std::unordered_map<std::string, UniformValue> properties = material->GetUniforms();
 
 			std::shared_ptr<Texture> texture = material->GetTexture();
@@ -194,6 +274,11 @@ namespace Loopie {
 				ImGui::Separator();
 			}
 			
+			
+			
+			if (!isEditable)
+				ImGui::BeginDisabled();
+
 			for (auto& [name, uniform] : properties)
 			{
 
@@ -324,15 +409,253 @@ namespace Loopie {
 						break;
 				}
 			}
-			if (ImGui::Button("Apply")) {
-				material->Save();
+
+			if (!isEditable)
+				ImGui::EndDisabled();
+			else {
+				if (ImGui::Button("Apply")) {
+					material->Save();
+				}
+			}
+			
+		}
+
+		RemoveComponent(meshRenderer);	
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawRectTransform(RectTransform* rect)
+	{
+		Canvas* root = rect->FindRootCanvas();
+		bool isOverlay = (root && root->Mode == RenderMode::ScreenSpaceOverlay);
+
+		if (isOverlay && rect->GetOwner()->HasComponent<Canvas>()) {
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Mode: Screen Space Overlay (Transform Locked)");
+			ImGui::BeginDisabled();
+		}
+
+		ImGui::PushID(rect);
+		if (ImGui::CollapsingHeader("RectTransform", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bool changed = false;
+
+			// Posición Anclada (X, Y, Z)
+			if (ImGui::DragFloat3("Pos", &rect->AnchoredPosition.x, 0.1f)) changed = true;
+
+			// Tamaño (Width, Height)
+			if (ImGui::DragFloat("Width", &rect->Width, 0.1f)) changed = true;
+			if (ImGui::DragFloat("Height", &rect->Height, 0.1f)) changed = true;
+
+			ImGui::Separator();
+
+			if (isOverlay && rect->GetOwner()->HasComponent<Canvas>()) {
+				ImGui::EndDisabled();
+			}
+
+			if (changed) {
+				rect->MarkDirty();
+				rect->RefreshMatrix();
+				Application::GetInstance().GetScene().GetOctree().Rebuild();
 			}
 		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawCanvas(Canvas* canvas)
+	{
+		ImGui::PushID(canvas);
+		if (ImGui::CollapsingHeader("Canvas", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			// Selector de Render Mode
+			const char* modes[] = { "Screen Space Overlay", "World Space" };
+			int currentMode = (int)canvas->Mode;
+			if (ImGui::Combo("Render Mode", &currentMode, modes, IM_ARRAYSIZE(modes)))
+			{
+				canvas->Mode = (RenderMode)currentMode;
+			}
+
+			// Toggle de Pixel Perfect
+			if (ImGui::Checkbox("Pixel Perfect", &canvas->PixelPerfect))
+			{
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawCanvasScaler(CanvasScaler* scaler)
+	{
+		ImGui::PushID(scaler);
+		if (ImGui::CollapsingHeader("Canvas Scaler", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			// UI Scale Mode
+			const char* modes[] = { "Constant Pixel Size", "Scale With Screen Size" };
+			int currentMode = (int)scaler->Mode;
+			if (ImGui::Combo("Scale Mode", &currentMode, modes, IM_ARRAYSIZE(modes)))
+			{
+				scaler->Mode = (ScaleMode)currentMode;
+			}
+
+			if (scaler->Mode == ScaleMode::ScaleWithScreenSize)
+			{
+				// Resolución de referencia (donde diseñaste la UI)
+				ImGui::DragFloat2("Ref Resolution", &scaler->ReferenceResolution.x, 1.0f);
+
+				// Slider para el Match (0 = Ancho, 1 = Alto)
+				ImGui::SliderFloat("Match (W/H)", &scaler->MatchWidthOrHeight, 0.0f, 1.0f);
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawImage(Image* image)
+	{
+		ImGui::PushID(image);
+		if (ImGui::CollapsingHeader("Image", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			// Color Picker
+			vec4 color = image->Color;
+			ImVec4 imguiColor(color.x, color.y, color.z, color.w);
+			ImGui::Text("Texture: %s", image->pathSprite.c_str());
+			if (ImGui::ColorEdit4("Color", (float*)&imguiColor))
+			{
+				image->SetColor(vec4(imguiColor.x, imguiColor.y, imguiColor.z, imguiColor.w));
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawButton(Button* button)
+	{
+		ImGui::PushID(button);
+		if (ImGui::CollapsingHeader("Button", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::Checkbox("Interactive", &button->interactive))
+			{
+				// ...
+			}
+
+			// Normal Color picker
+			vec4 normalColor = button->NormalColor;
+			ImVec4 imguiNormalColor(normalColor.x, normalColor.y, normalColor.z, normalColor.w);
+			if (ImGui::ColorEdit4("Normal Color", (float*)&imguiNormalColor))
+			{
+				button->NormalColor = vec4(imguiNormalColor.x, imguiNormalColor.y, imguiNormalColor.z, imguiNormalColor.w);
+			}
+
+			// Hovered Color picker
+			vec4 hoveredColor = button->HoveredColor;
+			ImVec4 imguiHoveredColor(hoveredColor.x, hoveredColor.y, hoveredColor.z, hoveredColor.w);
+			if (ImGui::ColorEdit4("Hovered Color", (float*)&imguiHoveredColor))
+			{
+				button->HoveredColor = vec4(imguiHoveredColor.x, imguiHoveredColor.y, imguiHoveredColor.z, imguiHoveredColor.w);
+			}
+
+			// Pressed Color picker
+			vec4 pressedColor = button->PressedColor;
+			ImVec4 imguiPressedColor(pressedColor.x, pressedColor.y, pressedColor.z, pressedColor.w);
+			if (ImGui::ColorEdit4("Pressed Color", (float*)&imguiPressedColor))
+			{
+				button->PressedColor = vec4(imguiPressedColor.x, imguiPressedColor.y, imguiPressedColor.z, imguiPressedColor.w);
+			}
+
+			// Disabled Color picker
+			vec4 disabledColor = button->DisabledColor;
+			ImVec4 imguiDisabledColor(disabledColor.x, disabledColor.y, disabledColor.z, disabledColor.w);
+			if (ImGui::ColorEdit4("Disabled Color", (float*)&imguiDisabledColor))
+			{
+				button->DisabledColor = vec4(imguiDisabledColor.x, imguiDisabledColor.y, imguiDisabledColor.z, imguiDisabledColor.w);
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawText(Text* text)
+	{
+		ImGui::PushID(text);
+		if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			char buffer[512];
+			memset(buffer, 0, sizeof(buffer));
+			strncpy_s(buffer, text->GetText().c_str(), sizeof(buffer) - 1);
+			if (ImGui::InputTextMultiline("Text##input", buffer, sizeof(buffer), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 5)))
+			{
+				text->SetText(std::string(buffer));
+			}
+			float fontSize = text->GetFontSize();
+			if (ImGui::DragFloat("Font Size", &fontSize, 1.0f, 1.0f, 200.0f))
+			{
+				text->SetFontSize(fontSize);
+			}
+			vec3 color = text->GetColor();
+			ImVec4 imguiColor(color.x, color.y, color.z, 1.0f);
+			if (ImGui::ColorEdit3("Color", (float*)&imguiColor))
+			{
+				text->SetColor(vec3(imguiColor.x, imguiColor.y, imguiColor.z));
+			}
+		}
+		ImGui::PopID();
 	}
 
 	void InspectorInterface::AddComponent(const std::shared_ptr<Entity>& entity)
 	{
-		
+		if (!entity)
+			return;
+
+		ImGui::Separator();
+
+		static const char* previewLabel = "Add Component...";
+		static int selectedIndex = -1;
+
+		if (ImGui::BeginCombo("##AddComponentCombo", previewLabel))
+		{
+			if (!entity->HasComponent<Camera>())
+			{
+				if (ImGui::Selectable("Camera"))
+				{
+					entity->AddComponent<Camera>();
+					ImGui::EndCombo();
+					return;
+				}
+			}
+
+			if (ImGui::Selectable("Mesh Renderer"))
+			{
+				entity->AddComponent<MeshRenderer>();
+				ImGui::EndCombo();
+				return;
+			}
+
+
+			///// How To Add More Components
+			// 
+			//if (ImGui::Selectable(""))
+			//{
+			//    entity->AddComponent<>();
+			//    ImGui::EndCombo();
+			//    return;
+			//}
+
+			
+
+			ImGui::EndCombo();
+		}
+	}
+
+	bool InspectorInterface::RemoveComponent(Component* component)
+	{
+		if (!component)
+			return false;
+
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Remove Component"))
+			{
+				component->GetOwner()->RemoveComponent(component);
+				ImGui::EndPopup();
+				return true;
+			}
+			ImGui::EndPopup();
+		}
 	}
 
 	void InspectorInterface::DrawMaterialImportSettings(const std::filesystem::path& path)
@@ -350,5 +673,18 @@ namespace Loopie {
 		else if (id == OnEntityOrFileNotification::OnFileSelect) {
 			m_mode = InspectorMode::ImportMode;
 		}
+	}
+	std::vector<std::string> InspectorInterface::GetAllTexturePaths()
+	{
+		std::vector<std::string> textures;
+
+		for (auto& [uuid, metadata] : AssetRegistry::GetAllAssets())
+		{
+			if (metadata.Type == ResourceType::TEXTURE && !metadata.CachesPath.empty()) {
+				textures.push_back(metadata.CachesPath[0]);
+			}
+		}
+
+		return textures;
 	}
 }

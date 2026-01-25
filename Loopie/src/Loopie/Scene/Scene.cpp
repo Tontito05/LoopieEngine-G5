@@ -5,6 +5,12 @@
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/Camera.h"
 #include "Loopie/Components/MeshRenderer.h"
+#include "Loopie/Components/RectTransform.h"
+#include "Loopie/Components/Canvas.h"
+#include "Loopie/Components/CanvasScaler.h"
+#include "Loopie/Components/Image.h"
+#include "Loopie/Components/Button.h"
+
 #include "Loopie/Helpers/LoopieHelpers.h"
 #include "Loopie/Resources/AssetRegistry.h"
 
@@ -242,6 +248,22 @@ namespace Loopie {
 		return siblingEntities;
 	}
 
+	Camera* Scene::GetMainCamera() const
+	{
+		for (const auto& [uuid, entity] : m_entities)
+		{
+			if (entity->GetIsActive())
+			{
+				Camera* camera = entity->GetComponent<Camera>();
+				if (camera && camera->IsMainCamera())
+				{
+					return camera;
+				}
+			}
+		}
+		return nullptr;
+	}
+
 	bool Scene::ReadAndLoadSceneFile(std::string filePath, bool safeSceneAsLastLoaded)
 	{
 		m_entities.clear();
@@ -344,6 +366,52 @@ namespace Loopie {
 							meshRenderer->Deserialize(node);
 						}
 					}
+					else if (componentNode.Contains("recttransform"))
+					{
+						JsonNode node = componentNode.Child("recttransform");
+						auto rectTransform = entity->AddComponent<RectTransform>();
+						if (rectTransform)
+						{
+							rectTransform->Deserialize(node);
+						}
+					}
+					else if (componentNode.Contains("canvas"))
+					{
+						JsonNode node = componentNode.Child("canvas");
+						auto canvas = entity->AddComponent<Canvas>();
+						if (canvas)
+						{
+							canvas->Deserialize(node);
+						}
+					}
+					else if (componentNode.Contains("canvasscaler"))
+					{
+						JsonNode node = componentNode.Child("canvasscaler");
+						auto canvasScaler = entity->AddComponent<CanvasScaler>();
+						if (canvasScaler)
+						{
+							canvasScaler->Deserialize(node);
+						}
+					}
+					else if (componentNode.Contains("image"))
+					{
+						JsonNode node = componentNode.Child("image");
+						auto image = entity->AddComponent<Image>();
+						if (image)
+						{
+							image->Deserialize(node);
+						}
+					}
+					else if (componentNode.Contains("button"))
+					{
+						JsonNode node = componentNode.Child("button");
+						auto button = entity->AddComponent<Button>();
+						if (button)
+						{
+							button->Deserialize(node);
+						}
+					}
+
 				}
 			}
 		}

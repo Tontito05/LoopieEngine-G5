@@ -7,12 +7,18 @@
 
 namespace Loopie
 {
+	enum class CameraProjection
+	{
+		Perspective = 0,
+		Orthographic
+	};
+
 	class Camera : public Component, public IObserver<TransformNotification>
 	{
 	public:
 		DEFINE_TYPE(Camera)
 
-			Camera(float fov = 60.0f, float near_plane = 0.3f, float far_plane = 200.0f, bool canBeMainCamera = true);
+		Camera(float fov = 60.0f, float near_plane = 0.3f, float far_plane = 200.0f, bool canBeMainCamera = true);
 		~Camera();
 		void Init() override; //// From Component
 		void RenderGizmo() override;
@@ -39,6 +45,13 @@ namespace Loopie
 
 		const std::shared_ptr<FrameBuffer> GetRenderTarget() const { return m_renderTarget; }
 		void SetRenderTarget(std::shared_ptr<FrameBuffer> buffer) { m_renderTarget = buffer; }
+
+		void SetProjection(CameraProjection type);
+		CameraProjection GetProjection() const { return m_projectionType; }
+
+		// Ortographic
+		void SetOrthoSize(float size);
+		float GetOrthoSize() const { return m_orthoSize; }
 
 		static Camera* GetMainCamera() { return s_Main; }
 		static bool SetMainCamera(Camera* camera);
@@ -72,5 +85,9 @@ namespace Loopie
 		static Camera* s_Main;
 		bool m_canBeMainCamera = true;
 		bool m_isMainCamera = false;
+
+		CameraProjection m_projectionType = CameraProjection::Perspective;
+
+		float m_orthoSize = 10.0f;
 	};
 }
