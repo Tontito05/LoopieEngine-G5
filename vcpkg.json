@@ -3,20 +3,25 @@
   "version-string": "1.0.0",
   "builtin-baseline": "9824d05f8d9548720ba3331f4baba3e2d6c1693b",
   "dependencies": [
-    "glad",
-    "sdl3",
-    "spdlog",
-    "opengl",
-    "glm",
-    "nativefiledialog-extended",
-    "nlohmann-json",
     "assimp",
-    "lz4",
     "devil",
-    "imguizmo",
+    "glad",
+    "glm",
     {
       "name": "imgui",
-      "features": [ "opengl3-binding", "sdl3-binding", "docking-experimental" ]
-    }
+      "features": [
+        "docking-experimental",
+        "opengl3-binding",
+        "sdl3-binding"
+      ]
+    },
+    "imguizmo",
+    "lz4",
+    "nativefiledialog-extended",
+    "nlohmann-json",
+    "opengl",
+    "sdl3",
+    "spdlog",
+    "freetype"
   ]
 }

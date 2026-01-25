@@ -20,6 +20,7 @@ find_package(lz4 REQUIRED)
 find_package(imguizmo REQUIRED)
 find_package(imgui REQUIRED)
 find_package(DevIL REQUIRED)
+find_package(freetype REQUIRED)
 
 
 add_library(${PROJECT_NAME} ${SOURCES})
@@ -42,6 +43,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 	imgui::imgui
 	DevIL::IL
 	DevIL::ILU
+	Freetype::Freetype
 )
 
 

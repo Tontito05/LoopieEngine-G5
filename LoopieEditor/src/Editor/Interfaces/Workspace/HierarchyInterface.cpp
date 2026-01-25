@@ -9,6 +9,7 @@
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/Image.h"
 #include "Loopie/Components/Button.h"
+#include "Loopie/Components/Text.h"
 
 #include "Loopie/Helpers/LoopieHelpers.h"
 #include "Editor/Interfaces/Workspace/SceneInterface.h"
@@ -181,6 +182,10 @@ namespace Loopie {
 				if (s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
 					SelectEntity(CreateButton(s_SelectedEntity.lock()));
 			}
+			if (ImGui::MenuItem("Text")) {
+				if (s_SelectedEntity.lock() && s_SelectedEntity.lock()->HasComponent<Canvas>())
+					SelectEntity(CreateText(s_SelectedEntity.lock()));
+			}
 			ImGui::EndMenu();
 		}
 	}
@@ -303,5 +308,14 @@ namespace Loopie {
 		button->AddComponent<Button>();
 
 		return button;
+	}
+	std::shared_ptr<Entity> HierarchyInterface::CreateText(const std::shared_ptr<Entity>& parent)
+	{
+		std::shared_ptr<Entity> textEntity = m_scene->CreateEntity("Text", parent);
+
+		textEntity->AddComponent<RectTransform>();
+		Text* textComp = textEntity->AddComponent<Text>();
+
+		return textEntity;
 	}
 }

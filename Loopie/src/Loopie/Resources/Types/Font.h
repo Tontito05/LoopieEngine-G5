@@ -1,31 +1,30 @@
 #pragma once
-#include "Loopie/Math/MathTypes.h"
-#include "Loopie/Resources/Resource.h"
-#include <unordered_map>
+#include <map>
+#include <string>
+#include <glm/glm.hpp>
+#include "Loopie/Render/VertexArray.h"
+#include "Loopie/Render/Shader.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 namespace Loopie {
-
-    struct Glyph
-    {
-        vec2 size;
-        vec2 bearing;
-        float advance;
-        vec2 uvMin;
-        vec2 uvMax;
+    struct Character {
+        unsigned int TextureID;
+        glm::ivec2   Size;
+        glm::ivec2   Bearing;
+        unsigned int Advance;
     };
 
-	class Font
-    {
-        friend class FontImporter;
-        friend class TextRenderer;
+    class Font {
     public:
-        const Glyph& GetGlyph(char c) const;
-        unsigned int GetTextureID() const { return m_textureID; }
-        float GetFontSize() const { return m_fontSize; }
+        Font(const std::string& fontPath, unsigned int fontSize);
+
+        void RenderText(Shader& shader, const std::string& text, float x, float y, float scale, const matrix4& transform, const vec4& color);
 
     private:
-        std::unordered_map<char, Glyph> m_glyphs;
-        unsigned int m_textureID = 0;
-        float m_fontSize = 0.0f;
+        std::map<char, Character> m_Characters;
+        VertexArray* m_VAO;
+        VertexBuffer* m_VBO;
+        IndexBuffer* m_EBO;
     };
-};
+}

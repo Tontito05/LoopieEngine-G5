@@ -6,6 +6,8 @@
 #include "Loopie/Components/Transform.h"
 #include "Loopie/Components/MeshRenderer.h"
 #include "Loopie/Components/Button.h"
+#include "Loopie/Components/Text.h"
+#include "Loopie/Scene/Entity.h"
 
 #include <imgui.h>
 
@@ -26,6 +28,7 @@ namespace Loopie {
 			Application::GetInstance().GetInputEvent().SetGameSize(vec2(m_windowSize.x, m_windowSize.y));
 			m_entityUnderMouse = MousePick();
 			HandleButtonLogic();
+			HandleTextLogic();
 			ImGui::Image((ImTextureID)m_buffer->GetTextureId(), size, ImVec2(0, 1), ImVec2(1, 0));
 		}
 		else
@@ -102,6 +105,60 @@ namespace Loopie {
 		if (mouseReleased) {
 			m_lastPressedEntity = nullptr;
 		}
+	}
+
+	void GameInterface::HandleTextLogic()
+	{
+		bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+
+		if (mouseReleased)
+		{
+			m_activeTextEntity = nullptr;
+
+			if (m_entityUnderMouse)
+			{
+				if (auto text = m_entityUnderMouse->GetComponent<Text>())
+				{
+					if (text->interactable)
+						m_activeTextEntity = m_entityUnderMouse;
+				}
+			}
+		}
+
+		if (!m_activeTextEntity)
+			return;
+
+		Text* text = m_activeTextEntity->GetComponent<Text>();
+		if (!text)
+			return;
+
+		// --- Escritura de texto ---
+		ImGuiIO& io = ImGui::GetIO();
+
+		for (int i = 0; i < io.InputQueueCharacters.Size; i++)
+		{
+			unsigned int c = io.InputQueueCharacters[i];
+
+			if (c == '\b') // backspace
+			{
+				std::string str = text->GetText();
+				if (!str.empty())
+					str.pop_back();
+				text->SetText(str);
+			}
+			else if (c == '\n' || c == '\r')
+			{
+				m_activeTextEntity = nullptr; // terminar edición
+			}
+			else if (c >= 32) // caracteres imprimibles
+			{
+				std::string str = text->GetText();
+				str.push_back((char)c);
+				text->SetText(str);
+			}
+		}
+
+		io.InputQueueCharacters.clear();
 	}
 
 	std::shared_ptr<Entity> GameInterface::MousePick()

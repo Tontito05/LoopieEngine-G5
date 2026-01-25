@@ -22,6 +22,7 @@
 #include "Loopie/Components/CanvasScaler.h"
 #include "Loopie/Components/Image.h"
 #include "Loopie/Components/Button.h"
+#include "Loopie/Components/Text.h"
 
 #include "Loopie/Helpers/LoopieHelpers.h"
 
@@ -277,6 +278,15 @@ namespace Loopie
 				}
 			}
 		}
+
+		for (auto entity : entities)
+		{
+			if (auto text = entity->GetComponent<Text>())
+			{
+				text->Render();
+			}
+		}
+
 		Renderer::DisableStencil();
 		if (Renderer::IsGizmoActive()) {
 			if (selectedEntity)

@@ -21,6 +21,7 @@ namespace Loopie {
 		Ray MouseRay();
 
 		void HandleButtonLogic();
+		void HandleTextLogic();
 
 		std::shared_ptr<Entity> MousePick();
 
@@ -32,6 +33,8 @@ namespace Loopie {
 
 		ivec2 m_windowSize = ivec2(0);
 		ivec2 m_mousePosition = ivec2(0);
+
+		std::shared_ptr<Entity> m_activeTextEntity = nullptr;
 
 		std::shared_ptr<FrameBuffer> m_buffer;
 		std::shared_ptr<Entity> m_entityUnderMouse = nullptr;

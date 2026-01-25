@@ -9,6 +9,7 @@
 #include "Loopie/Components/CanvasScaler.h"
 #include "Loopie/Components/Image.h"
 #include "Loopie/Components/Button.h"
+#include "Loopie/Components/Text.h"
 #include "Loopie/Core/Log.h"
 #include "Loopie/Math/MathTypes.h"
 #include "Loopie/Components/Camera.h"
@@ -84,6 +85,9 @@ namespace Loopie {
 			}
 			else if (component->GetTypeID() == Button::GetTypeIDStatic()) {
 				DrawButton(static_cast<Button*>(component));
+			}
+			else if (component->GetTypeID() == Text::GetTypeIDStatic()) {
+				DrawText(static_cast<Text*>(component));
 			}
 		}
 		AddComponent(entity);
@@ -560,6 +564,33 @@ namespace Loopie {
 			if (ImGui::ColorEdit4("Disabled Color", (float*)&imguiDisabledColor))
 			{
 				button->DisabledColor = vec4(imguiDisabledColor.x, imguiDisabledColor.y, imguiDisabledColor.z, imguiDisabledColor.w);
+			}
+		}
+		ImGui::PopID();
+	}
+
+	void InspectorInterface::DrawText(Text* text)
+	{
+		ImGui::PushID(text);
+		if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			char buffer[512];
+			memset(buffer, 0, sizeof(buffer));
+			strncpy_s(buffer, text->GetText().c_str(), sizeof(buffer) - 1);
+			if (ImGui::InputTextMultiline("Text##input", buffer, sizeof(buffer), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 5)))
+			{
+				text->SetText(std::string(buffer));
+			}
+			float fontSize = text->GetFontSize();
+			if (ImGui::DragFloat("Font Size", &fontSize, 1.0f, 1.0f, 200.0f))
+			{
+				text->SetFontSize(fontSize);
+			}
+			vec3 color = text->GetColor();
+			ImVec4 imguiColor(color.x, color.y, color.z, 1.0f);
+			if (ImGui::ColorEdit3("Color", (float*)&imguiColor))
+			{
+				text->SetColor(vec3(imguiColor.x, imguiColor.y, imguiColor.z));
 			}
 		}
 		ImGui::PopID();
